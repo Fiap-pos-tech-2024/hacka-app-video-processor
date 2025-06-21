@@ -16,3 +16,6 @@ Este é um projeto base para aplicações TypeScript.
 2. Rode `npm run build` para compilar.
 3. Rode `npm start` para executar o código compilado.
 4. Ou use `npm run dev` para desenvolvimento rápido.
+
+
+aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket poc-bucket
