@@ -271,3 +271,4 @@ docker-compose logs localstack
 **Solução**:
 - Execute o terminal como administrador
 - Ou altere as pastas `tmp/` e `outputs/` para um local com permissões adequadas
+
