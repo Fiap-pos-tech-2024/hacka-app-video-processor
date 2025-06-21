@@ -1,122 +1,59 @@
-# 🎬 Video Processing Service - Arquitetura Hexagonal
+# 🎬 Video Processing Service
 
-Um serviço de processamento de vídeos construído com **Arquitetura Hexagonal**, que monitora uma fila SQS, baixa vídeos do S3, extrai frames usando FFmpeg e gera arquivos ZIP com os frames extraídos.
+> Serviço de processamento de vídeos com arquitetura hexagonal que monitora fila SQS, processa vídeos do S3 e extrai frames usando FFmpeg.
 
-## Arquitetura
+## 🚀 Início Rápido
 
-Este projeto implementa a **Arquitetura Hexagonal (Ports and Adapters)**: 
+### Pré-requisitos
 
-### Estrutura do Projeto
+- **Node.js** (versão 18+)
+- **Docker** e **Docker Compose**
+- **FFmpeg** instalado e no PATH
 
-```
-src/
-├── domain/                    # 🎯 Núcleo da aplicação (Domínio)
-│   ├── entities/             # Entidades de domínio
-│   │   ├── VideoProcessing.ts
-│   │   └── QueueMessage.ts
-│   ├── ports/                # 🔌 Interfaces (Portas)
-│   │   ├── QueuePort.ts
-│   │   ├── StoragePort.ts
-│   │   ├── FileSystemPort.ts
-│   │   ├── VideoProcessorPort.ts
-│   │   └── NotificationPort.ts
-│   └── useCases/             # 📋 Casos de uso (Lógica de negócio)
-│       ├── ProcessVideoUseCase.ts
-│       └── CreateQueueUseCase.ts
-├── infrastructure/           # 🔧 Camada externa (Infraestrutura)
-│   ├── adapters/            # Adaptadores (implementam as portas)
-│   │   ├── AWSSQSAdapter.ts
-│   │   ├── AWSS3Adapter.ts
-│   │   ├── NodeFileSystemAdapter.ts
-│   │   ├── FFmpegVideoProcessor.ts
-│   │   └── ConsoleNotificationAdapter.ts
-│   ├── config/
-│   │   └── AppConfig.ts
-│   └── factories/
-│       └── DependencyFactory.ts
-├── application/             # 🚀 Camada de aplicação
-│   └── services/
-│       └── VideoProcessingService.ts
-├── scripts/
-│   └── testUpload.ts       # Script de teste para upload
-└── index.ts                # 🎯 Ponto de entrada
-```
-
-## 🛠️ Pré-requisitos
-
-### Software Necessário
-
-1. **Node.js** (versão 18 ou superior)
-   ```bash
-   # Verificar versão
-   node --version
-   ```
-
-2. **FFmpeg** (para extração de frames)
-   - **Windows**: Baixar de [ffmpeg.org](https://ffmpeg.org/download.html) e adicionar ao PATH
-   - **macOS**: `brew install ffmpeg`
-   - **Linux**: `sudo apt install ffmpeg`
-   
-   ```bash
-   # Verificar instalação
-   ffmpeg -version
-   ```
-
-3. **Docker** (para LocalStack)
-   ```bash
-   # Verificar instalação
-   docker --version
-   docker-compose --version
-   ```
-
-### Arquivos Necessários
-
-- Coloque um arquivo de vídeo de teste na pasta `video/` com o nome `videoplayback.mp4`
-
-## 🚀 Instalação e Configuração
-
-### 1. Clone e Configure o Projeto
+### Instalação
 
 ```bash
-# Clone o repositório (ou baixe os arquivos)
-cd  hacka-app-video-processor
+# Clone o projeto
+git clone <url-do-repositorio>
+cd base-hexa
 
 # Instale as dependências
 npm install
-```
 
-### 2. Inicie o LocalStack (AWS Local)
-
-```bash
-# Inicie os serviços AWS locais
+# Inicie o LocalStack (AWS local)
 docker-compose up -d
 
-# Verifique se está rodando
-docker-compose ps
-```
-
-O LocalStack irá expor:
-- **S3**: `http://localhost:4566`
-- **SQS**: `http://localhost:4566`
-
-### 3. Compile o Projeto
-
-```bash
-# Compile o TypeScript para JavaScript
+# Compile o projeto
 npm run build
 ```
 
-Os arquivos compilados ficarão na pasta `dist/`.
-
-## 🎯 Como Executar
-
-### Execução Completa (Fluxo Completo)
-
-#### 1. Inicie o Serviço de Processamento
+### Execução
 
 ```bash
-# Inicia o serviço que monitora a fila SQS
+# Executar em produção
 npm start
+
+# Executar em desenvolvimento (com watch)
+npm run dev
+
+# Testar upload de vídeo
+npm run test-upload
+```
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── domain/              # Lógica de negócio
+│   ├── entities/        # Entidades do domínio
+│   ├── ports/          # Interfaces (contratos)
+│   └── useCases/       # Casos de uso
+├── infrastructure/      # Adaptadores externos
+│   ├── adapters/       # Implementações dos ports
+│   ├── config/         # Configurações
+│   └── factories/      # Injeção de dependência
+├── application/        # Serviços de aplicação
+└── scripts/           # Scripts utilitários
 ```
 
 Você verá:
@@ -181,93 +118,64 @@ base-hexa/
 | **Iniciar** | `npm start` | Inicia o serviço de processamento de vídeos |
 | **Desenvolvimento** | `npm run dev` | Modo desenvolvimento com hot-reload |
 | **Teste Upload** | `npm run test-upload` | Faz upload de um vídeo de teste e envia para processamento |
+## 🔧 Como Funciona
 
-## ⚙️ Configuração
+1. **Monitoramento**: O serviço monitora continuamente a fila SQS `video_processed`
+2. **Download**: Quando uma mensagem é recebida, baixa o vídeo do S3
+3. **Processamento**: Extrai frames do vídeo usando FFmpeg
+4. **Compressão**: Gera um arquivo ZIP com todos os frames
+5. **Upload**: Faz upload do ZIP para o S3
+6. **Limpeza**: Remove arquivos temporários
 
-### Configurações Principais (`src/infrastructure/config/AppConfig.ts`)
+## 🧪 Testando
 
-```typescript
-export const defaultConfig: AppConfig = {
-  aws: {
-    region: 'us-east-1',
-    endpoint: 'http://localhost:4566', // LocalStack
-    credentials: {
-      accessKeyId: 'test',
-      secretAccessKey: 'test',
-    },
-  },
-  s3: {
-    forcePathStyle: true, // Necessário para LocalStack
-  },
-  queue: {
-    name: 'video_processed',
-    checkIntervalMs: 20000, // Verifica fila a cada 20 segundos
-  },
-};
-```
-
-### Para Usar AWS Real (Produção)
-
-Altere as configurações em `AppConfig.ts`:
-
-```typescript
-export const productionConfig: AppConfig = {
-  aws: {
-    region: 'us-east-1', // Sua região AWS
-    endpoint: undefined, // Remove endpoint para usar AWS real
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  },
-  s3: {
-    forcePathStyle: false,
-  },
-  queue: {
-    name: 'video_processed',
-    checkIntervalMs: 10000,
-  },
-};
-```
-
-## 🐛 Solução de Problemas
-
-### Problema: FFmpeg não encontrado
-
-**Erro**: `FFmpeg spawn error: spawn ffmpeg ENOENT`
-
-**Solução**:
-- Instale o FFmpeg e certifique-se de que está no PATH do sistema
-- No Windows, reinicie o terminal após instalar
-
-### Problema: LocalStack não conecta
-
-**Erro**: Conexão recusada na porta 4566
-
-**Solução**:
 ```bash
-# Verifique se LocalStack está rodando
-docker-compose ps
+# 1. Inicie o serviço (em um terminal)
+npm start
 
-# Se não estiver, inicie
-docker-compose up -d
-
-# Verifique os logs se houver problemas
-docker-compose logs localstack
+# 2. Execute o teste de upload (em outro terminal)
+npm run test-upload
 ```
 
-### Problema: Arquivo de vídeo não encontrado
+O teste irá:
+- Fazer upload do vídeo `video/videoplaybook.mp4` para o S3
+- Enviar uma mensagem para a fila SQS
+- O serviço processará automaticamente o vídeo
 
-**Erro**: `Arquivo não encontrado: video/videoplayback.mp4`
+## 📝 Scripts Disponíveis
 
-**Solução**:
-- Coloque um arquivo de vídeo na pasta `video/` com o nome `videoplayback.mp4`
-- Ou altere o caminho no script `src/scripts/testUpload.ts`
+| Script | Descrição |
+|--------|-----------|
+| `npm run build` | Compila TypeScript para JavaScript |
+| `npm start` | Executa o serviço em produção |
+| `npm run dev` | Executa em modo desenvolvimento com hot-reload |
+| `npm run test-upload` | Testa o upload de vídeo |
 
-### Problema: Permissões no Windows
+## 🏗️ Arquitetura Hexagonal
 
-**Erro**: Problemas de permissão ao criar arquivos
+Este projeto implementa **Arquitetura Hexagonal** (Ports and Adapters):
 
-**Solução**:
-- Execute o terminal como administrador
-- Ou altere as pastas `tmp/` e `outputs/` para um local com permissões adequadas
+- **Domain**: Lógica de negócio pura, independente de frameworks
+- **Ports**: Interfaces que definem contratos
+- **Adapters**: Implementações específicas (AWS, FFmpeg, etc.)
+- **Application**: Orquestração entre domínio e infraestrutura
+
+## 📋 Pré-requisitos de Sistema
+
+- Node.js 18+
+- FFmpeg no PATH
+- Docker e Docker Compose
+- ~2GB de espaço livre (para vídeos e frames temporários)
+
+## 🚀 Deploy
+
+Para deploy em produção:
+
+1. Configure as credenciais AWS reais
+2. Altere o endpoint em `AppConfig.ts`
+3. Configure as variáveis de ambiente
+4. Execute `npm run build && npm start`
+
+---
+
+**Desenvolvido com ❤️ usando TypeScript e Arquitetura Hexagonal**
