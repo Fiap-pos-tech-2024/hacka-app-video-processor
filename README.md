@@ -4,12 +4,7 @@ Um serviço de processamento de vídeos construído com **Arquitetura Hexagonal*
 
 ## Arquitetura
 
-Este projeto implementa a **Arquitetura Hexagonal (Ports and Adapters)**, proporcionando:
-
-- ✨ **Separação clara de responsabilidades**
-- 🔄 **Inversão de dependências**
-- 🧪 **Alta testabilidade**
-- 🔧 **Fácil manutenção e extensibilidade**
+Este projeto implementa a **Arquitetura Hexagonal (Ports and Adapters)**: 
 
 ### Estrutura do Projeto
 
@@ -277,42 +272,3 @@ docker-compose logs localstack
 - Execute o terminal como administrador
 - Ou altere as pastas `tmp/` e `outputs/` para um local com permissões adequadas
 
-## 📈 Próximos Passos
-
-### Funcionalidades Futuras
-
-- [ ] 🧪 **Testes Unitários**: Implementar testes para todos os casos de uso
-- [ ] 📊 **Logs Estruturados**: Implementar logging com Winston ou similar
-- [ ] 🔔 **Webhooks**: Notificações via HTTP para sistemas externos
-- [ ] 🎨 **API REST**: Interface HTTP para upload de vídeos
-- [ ] 📱 **Dashboard**: Interface web para monitoramento
-- [ ] 🐋 **Docker**: Containerização da aplicação
-- [ ] 🚀 **CI/CD**: Pipeline de deployment automático
-
-### Extensões Possíveis
-
-- **Novos Processadores**: Adicionar outros tipos de processamento de vídeo
-- **Diferentes Formatos**: Suporte a mais formatos de vídeo
-- **Cloud Providers**: Adaptadores para Google Cloud, Azure
-- **Bases de Dados**: Adicionar persistência de dados
-
-## 🤝 Contribuindo
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📝 Licença
-
-Este projeto está sob a licença ISC. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
-**Desenvolvido com ❤️ usando Arquitetura Hexagonal e TypeScript**
-
-
-aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket poc-bucket
-
-node upload\uploadVideo.js "C:\Users\micha\Downloads\videos\sqs\express-sqs-s3-app\base\video\videoplayback.mp4" video 123
