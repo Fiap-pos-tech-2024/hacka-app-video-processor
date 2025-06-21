@@ -2,7 +2,7 @@
 
 Um serviço de processamento de vídeos construído com **Arquitetura Hexagonal**, que monitora uma fila SQS, baixa vídeos do S3, extrai frames usando FFmpeg e gera arquivos ZIP com os frames extraídos.
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 Este projeto implementa a **Arquitetura Hexagonal (Ports and Adapters)**, proporcionando:
 
