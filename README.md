@@ -19,3 +19,5 @@ Este é um projeto base para aplicações TypeScript.
 
 
 aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket poc-bucket
+
+node upload\uploadVideo.js "C:\Users\micha\Downloads\videos\sqs\express-sqs-s3-app\base\video\videoplayback.mp4" video 123

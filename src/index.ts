@@ -4,6 +4,17 @@ import { Readable } from 'stream';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+// Métodos de notificação externa (stubs para implementação futura)
+async function notifyExternalSuccess(context: any) {
+    // TODO: Implementar notificação de sucesso para sistema externo
+    console.log('Notificação de sucesso enviada:', context);
+}
+
+async function notifyExternalError(context: any, error: any) {
+    // TODO: Implementar notificação de erro para sistema externo
+    console.error('Notificação de erro enviada:', context, error);
+}
+
 async function createQueue(sqsClient: SQSClient) {
     const params = {
         QueueName: 'video_processed',
@@ -17,6 +28,7 @@ async function createQueue(sqsClient: SQSClient) {
         return data.QueueUrl;
     } catch (err) {
         console.error('Erro ao criar fila:', err);
+        await notifyExternalError({ step: 'createQueue' }, err);
     }
 }
 
@@ -39,10 +51,10 @@ async function checkQueue(sqsClient: SQSClient, queueURL: string) {
                     videoData = JSON.parse(msg.Body || '{}');
                     const { registerId, savedVideoKey, originalVideoName, type } = videoData;
                     console.log('Dados do vídeo para processamento:', videoData);
-                    // Baixar arquivo do S3 se houver key
                     if (savedVideoKey) {
-                        const fileBuffer = await downloadFromS3('poc-bucket', savedVideoKey);
-                        if (fileBuffer) {
+                        try {
+                            const fileBuffer = await downloadFromS3('poc-bucket', savedVideoKey);
+                            if (!fileBuffer) throw new Error('Arquivo não encontrado no S3');
                             const tempDir = path.join(process.cwd(), 'tmp');
                             await fs.mkdir(tempDir, { recursive: true });
                             const filePath = path.join(tempDir, originalVideoName || savedVideoKey);
@@ -87,10 +99,27 @@ async function checkQueue(sqsClient: SQSClient, queueURL: string) {
                             await fsExtra.remove(tempFramesDir);
                             await fsExtra.remove(filePath);
                             console.log('Zip gerado em:', zipPath);
+                            // Notifica sucesso somente após o zip
+                            await notifyExternalSuccess({
+                                registerId,
+                                savedVideoKey,
+                                originalVideoName,
+                                type,
+                                zipPath
+                            });
+                        } catch (processErr) {
+                            console.error('Erro ao processar vídeo:', processErr);
+                            await notifyExternalError({
+                                registerId,
+                                savedVideoKey,
+                                originalVideoName,
+                                type
+                            }, processErr);
                         }
                     }
                 } catch (jsonErr) {
                     console.error('Erro ao fazer parse do corpo da mensagem:', jsonErr);
+                    await notifyExternalError({ rawBody: msg.Body }, jsonErr);
                 }
                 if (msg.ReceiptHandle) {
                     const deleteParams = {
@@ -106,6 +135,7 @@ async function checkQueue(sqsClient: SQSClient, queueURL: string) {
         }
     } catch (err) {
         console.error('Receive Error', err);
+        await notifyExternalError({ queueURL }, err);
     }
 }
 
