@@ -48,6 +48,45 @@ async function checkQueue(sqsClient: SQSClient, queueURL: string) {
                             const filePath = path.join(tempDir, originalVideoName || savedVideoKey);
                             await fs.writeFile(filePath, fileBuffer);
                             console.log('Arquivo salvo em:', filePath);
+
+                            // Processa frames e gera zip
+                            const { spawn } = require('child_process');
+                            const archiver = require('archiver');
+                            const fsExtra = require('fs-extra');
+                            const { v4: uuidv4 } = require('uuid');
+                            const outputDir = path.join(process.cwd(), 'outputs');
+                            await fsExtra.ensureDir(outputDir);
+                            const id = uuidv4();
+                            const tempFramesDir = path.join(tempDir, id);
+                            await fsExtra.ensureDir(tempFramesDir);
+                            const framePattern = path.join(tempFramesDir, 'frame_%04d.png');
+                            await new Promise<void>((resolve, reject) => {
+                                const ffmpeg = spawn('ffmpeg', [
+                                    '-i', filePath,
+                                    '-vf', 'fps=1',
+                                    '-y',
+                                    framePattern
+                                ]);
+                                ffmpeg.on('close', (code: number) => code === 0 ? resolve() : reject(new Error('Erro no ffmpeg')));
+                            });
+                            const frames: string[] = await fsExtra.readdir(tempFramesDir);
+                            if (!frames.length) throw new Error('Nenhum frame extraído');
+                            const zipName = `frames_${id}.zip`;
+                            const zipPath = path.join(outputDir, zipName);
+                            await new Promise<void>((resolve, reject) => {
+                                const output = fsExtra.createWriteStream(zipPath);
+                                const archive = archiver('zip');
+                                output.on('close', resolve);
+                                archive.on('error', reject);
+                                archive.pipe(output);
+                                frames.forEach((frame: string) => {
+                                    archive.file(path.join(tempFramesDir, frame), { name: frame });
+                                });
+                                archive.finalize();
+                            });
+                            await fsExtra.remove(tempFramesDir);
+                            await fsExtra.remove(filePath);
+                            console.log('Zip gerado em:', zipPath);
                         }
                     }
                 } catch (jsonErr) {
