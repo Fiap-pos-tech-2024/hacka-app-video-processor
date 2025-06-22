@@ -6,9 +6,12 @@ export class NodeFileSystemAdapter implements FileSystemPort {
   async mkdir(path: string): Promise<void> {
     await fs.mkdir(path, { recursive: true });
   }
-
   async writeFile(path: string, data: Buffer): Promise<void> {
     await fs.writeFile(path, data);
+  }
+
+  async readFile(path: string): Promise<Buffer> {
+    return await fs.readFile(path);
   }
 
   async readdir(path: string): Promise<string[]> {
