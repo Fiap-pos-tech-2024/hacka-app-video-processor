@@ -2,7 +2,37 @@
 
 > Serviço de processamento de vídeos com arquitetura hexagonal que monitora fila SQS, processa vídeos do S3 e extrai frames usando FFmpeg.
 
-## 🚀 Início Rápido
+## � Executando com Docker (Recomendado)
+
+### Pré-requisitos
+
+- **Docker** e **Docker Compose**
+
+### Execução Simples
+
+1. **Windows:**
+   ```bash
+   start.bat
+   ```
+
+2. **Linux/Mac:**
+   ```bash
+   chmod +x start.sh
+   ./start.sh
+   ```
+
+3. **Manual:**
+   ```bash
+   docker-compose up --build
+   ```
+
+### Como Usar
+
+1. Coloque seu vídeo na pasta `video/`
+2. A aplicação irá processar automaticamente e gerar frames na pasta `outputs/`
+3. Para parar: `docker-compose down`
+
+## 🚀 Desenvolvimento Local
 
 ### Pré-requisitos
 
@@ -15,13 +45,13 @@
 ```bash
 # Clone o projeto
 git clone <url-do-repositorio>
-cd base-hexa
+cd hacka-app-processor
 
 # Instale as dependências
 npm install
 
 # Inicie o LocalStack (AWS local)
-docker-compose up -d
+docker-compose up localstack -d
 
 # Compile o projeto
 npm run build
