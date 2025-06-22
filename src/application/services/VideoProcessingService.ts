@@ -8,7 +8,6 @@ export class VideoProcessingService {
     private readonly queueName: string,
     private readonly checkIntervalMs: number
   ) {}
-
   async start(): Promise<void> {
     console.log('🚀 Iniciando serviço de processamento de vídeos...');
     
@@ -24,11 +23,19 @@ export class VideoProcessingService {
     console.log(`🔄 Verificando mensagens a cada ${this.checkIntervalMs}ms`);
 
     // Processar mensagens imediatamente
-    await this.processVideoUseCase.execute(queueUrl);
+    try {
+      await this.processVideoUseCase.execute(queueUrl);
+    } catch (error) {
+      console.error('❌ Erro no processamento inicial:', error);
+    }
 
     // Configurar intervalo de processamento
     setInterval(async () => {
-      await this.processVideoUseCase.execute(queueUrl);
+      try {
+        await this.processVideoUseCase.execute(queueUrl);
+      } catch (error) {
+        console.error('❌ Erro no processamento em intervalo:', error);
+      }
     }, this.checkIntervalMs);
 
     console.log('✅ Serviço iniciado com sucesso!');

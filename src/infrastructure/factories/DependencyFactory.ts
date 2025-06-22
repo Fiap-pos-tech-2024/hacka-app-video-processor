@@ -42,9 +42,11 @@ export class DependencyFactory {
   createFileSystemAdapter(): NodeFileSystemAdapter {
     return new NodeFileSystemAdapter();
   }
-
   createVideoProcessorAdapter(): FFmpegVideoProcessor {
-    return new FFmpegVideoProcessor(this.createFileSystemAdapter());
+    return new FFmpegVideoProcessor(
+      this.createFileSystemAdapter(),
+      this.createStorageAdapter()
+    );
   }
 
   createNotificationAdapter(): ConsoleNotificationAdapter {

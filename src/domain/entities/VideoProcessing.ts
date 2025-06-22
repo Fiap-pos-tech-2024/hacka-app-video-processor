@@ -12,6 +12,7 @@ export interface ProcessingResult {
   originalVideoName: string;
   type: string;
   outputPath?: string;
+  savedZipKey?: string;
   error?: Error;
 }
 
