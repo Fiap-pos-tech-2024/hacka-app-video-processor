@@ -176,6 +176,4 @@ Para deploy em produção:
 3. Configure as variáveis de ambiente
 4. Execute `npm run build && npm start`
 
----
 
-**Desenvolvido com ❤️ usando TypeScript e Arquitetura Hexagonal**
