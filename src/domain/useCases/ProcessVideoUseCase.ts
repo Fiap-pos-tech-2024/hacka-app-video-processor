@@ -103,14 +103,16 @@ export class ProcessVideoUseCase {
       
       if (frames.length === 0) {
         throw new Error('Nenhum frame extraído');
-      }      // Criar ZIP e fazer upload para S3
+      }      
+      
+      // Criar ZIP e fazer upload para S3
       const zipName = `frames_${id}.zip`;
       const zipPath = path.join(outputDir, zipName);
       const savedZipKey = await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath, 'poc-bucket');
 
       // Limpeza
       await this.fileSystemPort.remove(tempFramesDir);
-      await this.fileSystemPort.remove(filePath);      console.log('savedZipKey:', savedZipKey);
+      await this.fileSystemPort.remove(filePath);      
       
       result.success = true;
       result.outputPath = zipPath;

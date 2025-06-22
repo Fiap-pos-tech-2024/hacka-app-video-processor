@@ -59,10 +59,6 @@ export class FFmpegVideoProcessor implements VideoProcessorPort {
             
             // Upload para S3
             await this.storagePort.uploadFile(bucket, savedZipKey, zipBuffer);
-              console.log(`savedZipKey: ${savedZipKey}`);
-            
-            // Manter o arquivo local em outputs
-            console.log(`Arquivo ZIP mantido em: ${outputPath}`);
             
             resolve(savedZipKey);
           } catch (error) {
