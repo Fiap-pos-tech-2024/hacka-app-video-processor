@@ -21,7 +21,7 @@ export interface AppConfig {
 export const defaultConfig: AppConfig = {
   aws: {
     region: 'us-east-1',
-    endpoint: 'http://localhost:4566',
+    endpoint: process.env.AWS_ENDPOINT || (process.env.NODE_ENV === 'production' ? 'http://localstack:4566' : 'http://localhost:4566'),
     credentials: {
       accessKeyId: 'test',
       secretAccessKey: 'test',
