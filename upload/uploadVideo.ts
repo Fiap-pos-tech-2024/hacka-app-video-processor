@@ -36,6 +36,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         Key: savedVideoKey,
         Body: fileBuffer,
     }));
+    
     console.log('Arquivo enviado ao S3:', savedVideoKey);
 
     // Monta mensagem para a fila
