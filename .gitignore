@@ -19,6 +19,10 @@ Thumbs.db
 # Build
 *.tsbuildinfo
 
+# SonarCloud
+coverage/
+.scannerwork/
+
 # Outros
 *.swp
 *.swo
