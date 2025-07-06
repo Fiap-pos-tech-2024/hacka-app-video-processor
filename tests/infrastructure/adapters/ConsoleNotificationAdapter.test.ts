@@ -78,9 +78,12 @@ describe('ConsoleNotificationAdapter', () => {
         {
           registerId: 'test-456',
           savedVideoKey: 'videos/test2.mp4',
+          videoUrl: 'http://localhost:4566/test-bucket/videos/test2.mp4',
           originalVideoName: 'original2.mp4',
           type: 'mp4',
-          outputPath: undefined
+          outputPath: undefined,
+          savedZipKey: undefined,
+          zipUrl: undefined
         }
       );
     });
