@@ -10,33 +10,33 @@ export class VideoProcessingService {
   ) {}
   
   async start(): Promise<void> {
-    console.log('🚀 Iniciando serviço de processamento de vídeos...');
+    console.log('[STARTUP] Iniciando serviço de processamento de vídeos...');
     
     let queueUrl: string | undefined;
     
     // Verificar se já é uma URL de fila SQS
     if (this.queueIdentifier.includes('sqs') && this.queueIdentifier.includes('amazonaws.com')) {
-      console.log('✅ Usando URL da fila SQS fornecida:', this.queueIdentifier);
+      console.log('[INFO] Usando URL da fila SQS fornecida:', this.queueIdentifier);
       queueUrl = this.queueIdentifier;
     } else {
       // Criar/verificar fila pelo nome
-      console.log('🔄 Criando/verificando fila:', this.queueIdentifier);
+      console.log('[INFO] Criando/verificando fila:', this.queueIdentifier);
       queueUrl = await this.createQueueUseCase.execute(this.queueIdentifier);
       
       if (!queueUrl) {
-        console.error('❌ Não foi possível criar/acessar a fila. Encerrando aplicação.');
+        console.error('[ERROR] Não foi possível criar/acessar a fila. Encerrando aplicação.');
         return;
       }
     }
 
-    console.log('✅ Fila configurada:', queueUrl);
-    console.log(`🔄 Verificando mensagens a cada ${this.checkIntervalMs}ms`);
+    console.log('[SUCCESS] Fila configurada:', queueUrl);
+    console.log(`[INFO] Verificando mensagens a cada ${this.checkIntervalMs}ms`);
 
     // Processar mensagens imediatamente
     try {
       await this.processVideoUseCase.execute(queueUrl);
     } catch (error) {
-      console.error('❌ Erro no processamento inicial:', error);
+      console.error('[ERROR] Erro no processamento inicial:', error);
     }
 
     // Configurar intervalo de processamento
@@ -44,10 +44,10 @@ export class VideoProcessingService {
       try {
         await this.processVideoUseCase.execute(queueUrl!);
       } catch (error) {
-        console.error('❌ Erro no processamento em intervalo:', error);
+        console.error('[ERROR] Erro no processamento em intervalo:', error);
       }
     }, this.checkIntervalMs);
 
-    console.log('✅ Serviço iniciado com sucesso!');
+    console.log('[SUCCESS] Serviço iniciado com sucesso!');
   }
 }

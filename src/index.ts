@@ -4,7 +4,7 @@ import { VideoProcessingService } from './application/services/VideoProcessingSe
 
 async function main(): Promise<void> {
   try {
-    console.log('🎬 Iniciando aplicação de processamento de vídeos...');
+    console.log('[STARTUP] Iniciando aplicação de processamento de vídeos...');
     
     // Criar factory de dependências
     const dependencyFactory = new DependencyFactory(defaultConfig);
@@ -17,7 +17,7 @@ async function main(): Promise<void> {
     const queueUrl = defaultConfig.queue.url || '';
     const queueName = defaultConfig.queue.name;
     
-    console.log('📋 Configurações:');
+    console.log('-  Configurações:');
     console.log(`   - Região AWS: ${defaultConfig.aws.region}`);
     console.log(`   - Bucket S3: ${defaultConfig.s3.bucket}`);
     console.log(`   - Fila SQS: ${queueUrl || queueName}`);
@@ -40,7 +40,7 @@ async function main(): Promise<void> {
     });
     
   } catch (error) {
-    console.error('❌ Erro crítico na aplicação:', error);
+    console.error('[ERROR] Erro crítico na aplicação:', error);
     process.exit(1);
   }
 }
