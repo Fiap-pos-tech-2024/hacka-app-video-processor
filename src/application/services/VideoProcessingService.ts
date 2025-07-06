@@ -5,18 +5,28 @@ export class VideoProcessingService {
   constructor(
     private readonly processVideoUseCase: ProcessVideoUseCase,
     private readonly createQueueUseCase: CreateQueueUseCase,
-    private readonly queueName: string,
+    private readonly queueIdentifier: string, // Pode ser nome da fila ou URL
     private readonly checkIntervalMs: number
   ) {}
+  
   async start(): Promise<void> {
     console.log('🚀 Iniciando serviço de processamento de vídeos...');
     
-    // Criar/verificar fila
-    const queueUrl = await this.createQueueUseCase.execute(this.queueName);
+    let queueUrl: string | undefined;
     
-    if (!queueUrl) {
-      console.error('❌ Não foi possível criar/acessar a fila. Encerrando aplicação.');
-      return;
+    // Verificar se já é uma URL de fila SQS
+    if (this.queueIdentifier.includes('sqs') && this.queueIdentifier.includes('amazonaws.com')) {
+      console.log('✅ Usando URL da fila SQS fornecida:', this.queueIdentifier);
+      queueUrl = this.queueIdentifier;
+    } else {
+      // Criar/verificar fila pelo nome
+      console.log('🔄 Criando/verificando fila:', this.queueIdentifier);
+      queueUrl = await this.createQueueUseCase.execute(this.queueIdentifier);
+      
+      if (!queueUrl) {
+        console.error('❌ Não foi possível criar/acessar a fila. Encerrando aplicação.');
+        return;
+      }
     }
 
     console.log('✅ Fila configurada:', queueUrl);
@@ -32,7 +42,7 @@ export class VideoProcessingService {
     // Configurar intervalo de processamento
     setInterval(async () => {
       try {
-        await this.processVideoUseCase.execute(queueUrl);
+        await this.processVideoUseCase.execute(queueUrl!);
       } catch (error) {
         console.error('❌ Erro no processamento em intervalo:', error);
       }

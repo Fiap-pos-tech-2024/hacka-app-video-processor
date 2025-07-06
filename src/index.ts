@@ -13,11 +13,21 @@ async function main(): Promise<void> {
     const processVideoUseCase = dependencyFactory.createProcessVideoUseCase();
     const createQueueUseCase = dependencyFactory.createCreateQueueUseCase();
     
+    // Determinar a URL da fila - usar diretamente se fornecida via env, senão criar
+    const queueUrl = defaultConfig.queue.url || '';
+    const queueName = defaultConfig.queue.name;
+    
+    console.log('📋 Configurações:');
+    console.log(`   - Região AWS: ${defaultConfig.aws.region}`);
+    console.log(`   - Bucket S3: ${defaultConfig.s3.bucket}`);
+    console.log(`   - Fila SQS: ${queueUrl || queueName}`);
+    console.log(`   - Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    
     // Criar e iniciar serviço principal
     const videoProcessingService = new VideoProcessingService(
       processVideoUseCase,
       createQueueUseCase,
-      defaultConfig.queue.name,
+      queueUrl || queueName, // Usar URL direta se disponível, senão o nome
       defaultConfig.queue.checkIntervalMs
     );
     

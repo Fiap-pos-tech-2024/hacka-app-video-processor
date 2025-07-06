@@ -17,18 +17,25 @@ export class DependencyFactory {
   constructor(config: AppConfig) {
     this.config = config;
     
-    this.sqsClient = new SQSClient({
+    const sqsConfig: any = {
       region: config.aws.region,
-      endpoint: config.aws.endpoint,
-      credentials: config.aws.credentials,
-    });
-
-    this.s3Client = new S3Client({
+    };
+    
+    const s3Config: any = {
       region: config.aws.region,
-      endpoint: config.aws.endpoint,
-      forcePathStyle: config.s3.forcePathStyle,
-      credentials: config.aws.credentials,
-    });
+    };
+    
+    // Apenas adiciona endpoint e credentials se não estiver em produção
+    if (process.env.NODE_ENV !== 'production') {
+      sqsConfig.endpoint = config.aws.endpoint;
+      sqsConfig.credentials = config.aws.credentials;
+      s3Config.endpoint = config.aws.endpoint;
+      s3Config.credentials = config.aws.credentials;
+      s3Config.forcePathStyle = config.s3.forcePathStyle;
+    }
+    
+    this.sqsClient = new SQSClient(sqsConfig);
+    this.s3Client = new S3Client(s3Config);
   }
 
   createQueueAdapter(): AWSSQSAdapter {
@@ -48,7 +55,7 @@ export class DependencyFactory {
       this.createStorageAdapter(),
       {
         endpoint: this.config.aws.endpoint,
-        bucket: 'poc-bucket'
+        bucket: this.config.s3.bucket
       }
     );
   }
@@ -56,7 +63,7 @@ export class DependencyFactory {
   createNotificationAdapter(): ConsoleNotificationAdapter {
     return new ConsoleNotificationAdapter({
       endpoint: this.config.aws.endpoint,
-      bucket: 'poc-bucket'
+      bucket: this.config.s3.bucket
     });
   }
 

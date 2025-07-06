@@ -207,3 +207,8 @@ Para deploy em produção:
 4. Execute `npm run build && npm start`
 
 
+
+cd hacka-app-processor
+npm run build
+docker build -t maickway/video-processor:latest .
+docker push maickway/video-processor:latest

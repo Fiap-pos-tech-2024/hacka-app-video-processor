@@ -11,27 +11,36 @@ export interface AppConfig {
   aws: AWSConfig;
   s3: {
     forcePathStyle: boolean;
+    bucket: string;
   };
   queue: {
     name: string;
+    url?: string;
     checkIntervalMs: number;
   };
 }
 
 export const defaultConfig: AppConfig = {
   aws: {
-    region: 'us-east-1',
-    endpoint: process.env.AWS_ENDPOINT || (process.env.NODE_ENV === 'production' ? 'http://localstack:4566' : 'http://localhost:4566'),
-    credentials: {
-      accessKeyId: 'test',
-      secretAccessKey: 'test',
-    },
+    region: process.env.AWS_REGION || 'us-east-1',
+    endpoint: process.env.NODE_ENV === 'production' ? '' : (process.env.AWS_ENDPOINT || 'http://localhost:4566'),
+    credentials: process.env.NODE_ENV === 'production' 
+      ? {
+          accessKeyId: '', // AWS usa as credenciais do container/IAM role
+          secretAccessKey: '',
+        }
+      : {
+          accessKeyId: 'test',
+          secretAccessKey: 'test',
+        },
   },
   s3: {
-    forcePathStyle: true,
+    forcePathStyle: process.env.NODE_ENV !== 'production',
+    bucket: process.env.S3_BUCKET || 'poc-bucket',
   },
   queue: {
-    name: 'video_processed',
+    name: process.env.SQS_QUEUE_URL ? 'video-processing-queue' : 'video_processed',
+    url: process.env.SQS_QUEUE_URL,
     checkIntervalMs: 20000,
   },
 };
