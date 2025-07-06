@@ -41,7 +41,7 @@ async function createBucketIfNotExists() {
     }
 }
 
-async function uploadVideoAndNotify(filePath: string, type: string, registerId: string) {
+async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, email: string) {
     console.log('🚀 Iniciando upload e notificação...');
     
     // Verificar se o arquivo existe
@@ -76,9 +76,12 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         savedVideoKey,
         originalVideoName: fileName,
         type,
+        email,
     });
 
     console.log('📨 Enviando mensagem para a fila...');
+    console.log('� Email a ser enviado:', email);
+    console.log('�📋 Dados da mensagem:', JSON.parse(messageBody));
 
     // Envia mensagem para a fila
     await sqsClient.send(new SendMessageCommand({
@@ -86,7 +89,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         MessageBody: messageBody,
     }));
     
-    console.log('✅ Mensagem enviada para a fila:', messageBody);
+    console.log('✅ Mensagem enviada para a fila com sucesso!');
     console.log('🎬 Upload concluído! O vídeo será processado em breve.');
 }
 
@@ -95,9 +98,10 @@ async function main() {
     const videoPath = path.join(process.cwd(), 'video', 'videoplayback.mp4');
     const type = 'test-video';
     const registerId = `test-${Date.now()}`;
+    const email = 'usuario@exemplo.com'; // Email para notificação
 
     try {
-        await uploadVideoAndNotify(videoPath, type, registerId);
+        await uploadVideoAndNotify(videoPath, type, registerId, email);
     } catch (error) {
         console.error('❌ Erro no upload:', error);
         process.exit(1);

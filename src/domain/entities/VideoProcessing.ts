@@ -3,6 +3,7 @@ export interface VideoProcessingData {
   savedVideoKey: string;
   originalVideoName: string;
   type: string;
+  email?: string;
 }
 
 export interface ProcessingResult {
@@ -11,6 +12,7 @@ export interface ProcessingResult {
   savedVideoKey: string;
   originalVideoName: string;
   type: string;
+  email?: string;
   outputPath?: string;
   savedZipKey?: string;
   error?: Error;
@@ -21,7 +23,8 @@ export class VideoProcessing {
     public readonly registerId: string,
     public readonly savedVideoKey: string,
     public readonly originalVideoName: string,
-    public readonly type: string
+    public readonly type: string,
+    public readonly email?: string
   ) {}
 
   static fromData(data: VideoProcessingData): VideoProcessing {
@@ -29,7 +32,8 @@ export class VideoProcessing {
       data.registerId,
       data.savedVideoKey,
       data.originalVideoName,
-      data.type
+      data.type,
+      data.email
     );
   }
 
@@ -38,7 +42,8 @@ export class VideoProcessing {
       registerId: this.registerId,
       savedVideoKey: this.savedVideoKey,
       originalVideoName: this.originalVideoName,
-      type: this.type
+      type: this.type,
+      email: this.email
     };
   }
 }

@@ -72,7 +72,8 @@ export class ProcessVideoUseCase {
       registerId: videoProcessing.registerId,
       savedVideoKey: videoProcessing.savedVideoKey,
       originalVideoName: videoProcessing.originalVideoName,
-      type: videoProcessing.type
+      type: videoProcessing.type,
+      email: videoProcessing.email
     };
 
     try {

@@ -36,6 +36,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
       videoUrl: videoUrl,
       originalVideoName: result.originalVideoName,
       type: result.type,
+      email: result.email,
       outputPath: result.outputPath,
       savedZipKey: result.savedZipKey,
       zipUrl: zipUrl
