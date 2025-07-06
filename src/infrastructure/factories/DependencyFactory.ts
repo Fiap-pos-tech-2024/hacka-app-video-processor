@@ -36,7 +36,7 @@ export class DependencyFactory {
   }
 
   createStorageAdapter(): AWSS3Adapter {
-    return new AWSS3Adapter(this.s3Client);
+    return new AWSS3Adapter(this.s3Client, this.config.aws.endpoint);
   }
 
   createFileSystemAdapter(): NodeFileSystemAdapter {
@@ -45,12 +45,19 @@ export class DependencyFactory {
   createVideoProcessorAdapter(): FFmpegVideoProcessor {
     return new FFmpegVideoProcessor(
       this.createFileSystemAdapter(),
-      this.createStorageAdapter()
+      this.createStorageAdapter(),
+      {
+        endpoint: this.config.aws.endpoint,
+        bucket: 'poc-bucket'
+      }
     );
   }
 
   createNotificationAdapter(): ConsoleNotificationAdapter {
-    return new ConsoleNotificationAdapter();
+    return new ConsoleNotificationAdapter({
+      endpoint: this.config.aws.endpoint,
+      bucket: 'poc-bucket'
+    });
   }
 
   createProcessVideoUseCase(): ProcessVideoUseCase {

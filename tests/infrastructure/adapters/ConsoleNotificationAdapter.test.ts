@@ -15,7 +15,10 @@ describe('ConsoleNotificationAdapter', () => {
       error: jest.spyOn(console, 'error').mockImplementation(() => {})
     };
     
-    adapter = new ConsoleNotificationAdapter();
+    adapter = new ConsoleNotificationAdapter({
+      endpoint: 'http://localhost:4566',
+      bucket: 'test-bucket'
+    });
   });
 
   afterEach(() => {
@@ -45,9 +48,12 @@ describe('ConsoleNotificationAdapter', () => {
         {
           registerId: 'test-123',
           savedVideoKey: 'videos/test.mp4',
+          videoUrl: 'http://localhost:4566/test-bucket/videos/test.mp4',
           originalVideoName: 'original.mp4',
           type: 'mp4',
-          outputPath: '/path/to/output.zip'
+          outputPath: '/path/to/output.zip',
+          savedZipKey: undefined,
+          zipUrl: undefined
         }
       );
       expect(consoleSpy.log).toHaveBeenCalledTimes(1);

@@ -9,8 +9,28 @@ import { StoragePort } from '../../domain/ports/StoragePort.js';
 export class FFmpegVideoProcessor implements VideoProcessorPort {
   constructor(
     private readonly fileSystemPort: FileSystemPort,
-    private readonly storagePort: StoragePort
+    private readonly storagePort: StoragePort,
+    private readonly s3Config?: { endpoint?: string; bucket: string }
   ) {}
+
+  private buildS3Url(bucket: string, key: string): string {
+    const baseEndpoint = this.s3Config?.endpoint || 'https://s3.amazonaws.com';
+    
+    // Para LocalStack ou endpoints customizados com forcePathStyle
+    if (this.s3Config?.endpoint && (this.s3Config.endpoint.includes('localhost') || this.s3Config.endpoint.includes('localstack'))) {
+      let cleanEndpoint = baseEndpoint.replace(/\/$/, '');
+      
+      // Se estivermos em um container e a URL contém 'localstack', substitui por localhost para acesso externo
+      if (cleanEndpoint.includes('localstack')) {
+        cleanEndpoint = cleanEndpoint.replace('localstack', 'localhost');
+      }
+      
+      return `${cleanEndpoint}/${bucket}/${key}`;
+    }
+    
+    // Para AWS S3 real
+    return `https://${bucket}.s3.amazonaws.com/${key}`;
+  }
 
   async extractFrames(inputPath: string, outputDir: string): Promise<string[]> {
     const framePattern = path.join(outputDir, 'frame_%04d.png');
@@ -59,6 +79,10 @@ export class FFmpegVideoProcessor implements VideoProcessorPort {
             
             // Upload para S3
             await this.storagePort.uploadFile(bucket, savedZipKey, zipBuffer);
+            
+            // Construir e logar a URL completa do S3
+            const fullS3Url = this.buildS3Url(bucket, savedZipKey);
+            console.log(`URL completa: ${fullS3Url}`);
             
             resolve(savedZipKey);
           } catch (error) {

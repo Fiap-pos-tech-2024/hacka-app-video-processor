@@ -6,9 +6,11 @@ import path from 'path';
 // Configurações
 const BUCKET_NAME = 'poc-bucket'; // Substitua pelo nome real do bucket
 const QUEUE_URL = 'http://localhost:4566/000000000000/video_processed';
+const S3_ENDPOINT = 'http://localhost:4566';
+
 const s3Client = new S3Client({
     region: 'us-east-1',
-    endpoint: 'http://localhost:4566', // Altere se necessário
+    endpoint: S3_ENDPOINT, // Altere se necessário
     forcePathStyle: true,
     credentials: {
         accessKeyId: 'test',
@@ -25,6 +27,17 @@ const sqsClient = new SQSClient({
     },
 });
 
+function buildS3Url(bucket: string, key: string): string {
+    // Para LocalStack ou endpoints customizados com forcePathStyle
+    if (S3_ENDPOINT.includes('localhost') || S3_ENDPOINT.includes('localstack')) {
+        const cleanEndpoint = S3_ENDPOINT.replace(/\/$/, '');
+        return `${cleanEndpoint}/${bucket}/${key}`;
+    }
+    
+    // Para AWS S3 real
+    return `https://${bucket}.s3.amazonaws.com/${key}`;
+}
+
 async function uploadVideoAndNotify(filePath: string, type: string, registerId: string) {
     const fileName = path.basename(filePath);
     const fileBuffer = await fs.readFile(filePath);
@@ -36,7 +49,9 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         Key: savedVideoKey,
         Body: fileBuffer,
     }));
-    console.log('Arquivo enviado ao S3:', savedVideoKey);
+    
+    const fullS3Url = buildS3Url(BUCKET_NAME, savedVideoKey);
+    console.log('URL completa do video:', fullS3Url);
 
     // Monta mensagem para a fila
     const messageBody = JSON.stringify({
