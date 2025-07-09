@@ -36,7 +36,7 @@ jobs:
           ECR_REPOSITORY: hacka-app-processor
           IMAGE_TAG: latest
         run: |
-          echo "🔁 Forçando build sem cache para Video Processor..."
+          echo "Forçando build sem cache para Video Processor..."
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY --region us-east-1 || \
           aws ecr create-repository --repository-name $ECR_REPOSITORY --region us-east-1
 
@@ -54,16 +54,16 @@ jobs:
 
       - name: Wait for service stability
         run: |
-          echo "⏳ Aguardando estabilidade do serviço..."
+          echo " Aguardando estabilidade do serviço..."
           aws ecs wait services-stable \
             --cluster microservices-cluster \
             --services video-processor \
             --region us-east-1
-          echo "✅ Serviço Video Processor estável!"
+          echo "[SUCCESS] Serviço Video Processor estável!"
 
       - name: Verify ECS service status
         run: |
-          echo "🔍 Verificando status do serviço ECS..."
+          echo "[INFO] Verificando status do serviço ECS..."
           SERVICE_STATUS=$(aws ecs describe-services \
             --cluster microservices-cluster \
             --services video-processor \
@@ -85,23 +85,23 @@ jobs:
             --query "services[0].desiredCount" \
             --output text)
           
-          echo "📊 Status do serviço: $SERVICE_STATUS"
-          echo "🏃 Tasks rodando: $RUNNING_COUNT/$DESIRED_COUNT"
+          echo "[STATUS] Status do serviço: $SERVICE_STATUS"
+          echo "[TASKS] Tasks rodando: $RUNNING_COUNT/$DESIRED_COUNT"
           
           if [ "$RUNNING_COUNT" = "$DESIRED_COUNT" ] && [ "$SERVICE_STATUS" = "ACTIVE" ]; then
-            echo "✅ Processador de vídeo funcionando corretamente!"
+            echo "[SUCCESS] Processador de vídeo funcionando corretamente!"
           else
-            echo "⚠️  Aguardando todas as tasks ficarem prontas..."
+            echo "[WAIT] Aguardando todas as tasks ficarem prontas..."
           fi
 
       - name: Print service information
         run: |
-          echo "🎬 Video Processor (Queue Worker) - Informações do Deploy:"
-          echo "📦 Cluster: microservices-cluster"
-          echo "🔧 Serviço: video-processor"
-          echo "📬 Fila SQS: video-processing-queue"
-          echo "🗂️  Bucket S3: video-processor-storage-*"
-          echo "⚡ Tipo: Processador de fila (sem API HTTP)"
+          echo "Video Processor (Queue Worker) - Informações do Deploy:"
+          echo "Cluster: microservices-cluster"
+          echo "Serviço: video-processor"
+          echo "Fila SQS: video-processing-queue"
+          echo "Bucket S3: video-processor-storage-*"
+          echo "Tipo: Processador de fila (sem API HTTP)"
 
   deploy-notification:
     runs-on: ubuntu-latest
@@ -112,11 +112,11 @@ jobs:
       - name: Deploy status notification
         run: |
           if [ "${{ needs.build-and-deploy.result }}" == "success" ]; then
-            echo "🎉 Deploy do Video Processor realizado com sucesso!"
-            echo "🚀 O processador está rodando e monitorando a fila SQS."
-            echo "📬 Processando mensagens da fila: video-processing-queue"
-            echo "� O serviço está extraindo frames dos vídeos automaticamente."
+            echo "Deploy do Video Processor realizado com sucesso!"
+            echo "O processador está rodando e monitorando a fila SQS."
+            echo "Processando mensagens da fila: video-processing-queue"
+            echo "O serviço está extraindo frames dos vídeos automaticamente."
           else
-            echo "❌ Falha no deploy do Video Processor."
-            echo "🔍 Verifique os logs do GitHub Actions para mais detalhes."
+            echo "Falha no deploy do Video Processor."
+            echo "Verifique os logs do GitHub Actions para mais detalhes."
           fi

@@ -18,10 +18,10 @@ async function main(): Promise<void> {
     const queueName = defaultConfig.queue.name;
     
     console.log('-  Configurações:');
-    console.log(`   - Região AWS: ${defaultConfig.aws.region}`);
-    console.log(`   - Bucket S3: ${defaultConfig.s3.bucket}`);
-    console.log(`   - Fila SQS: ${queueUrl || queueName}`);
-    console.log(`   - Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`- Região AWS: ${defaultConfig.aws.region}`);
+    console.log(`- Bucket S3: ${defaultConfig.s3.bucket}`);
+    console.log(`- Fila SQS: ${queueUrl || queueName}`);
+    console.log(`- Ambiente: ${process.env.NODE_ENV || 'development'}`);
     
     // Criar e iniciar serviço principal
     const videoProcessingService = new VideoProcessingService(
@@ -35,7 +35,7 @@ async function main(): Promise<void> {
     
     // Manter aplicação rodando
     process.on('SIGINT', () => {
-      console.log('\n🛑 Encerrando aplicação...');
+      console.log('\n Encerrando aplicação...');
       process.exit(0);
     });
     

@@ -31,24 +31,24 @@ async function createBucketIfNotExists() {
         await s3Client.send(new CreateBucketCommand({
             Bucket: BUCKET_NAME,
         }));
-        console.log(`✅ Bucket "${BUCKET_NAME}" criado/verificado com sucesso`);
+        console.log(`[SUCCESS] Bucket "${BUCKET_NAME}" criado/verificado com sucesso`);
     } catch (error: any) {
         if (error.Code !== 'BucketAlreadyOwnedByYou' && error.Code !== 'BucketAlreadyExists') {
-            console.error('❌ Erro ao criar bucket:', error);
+            console.error('[ERROR] Erro ao criar bucket:', error);
             throw error;
         }
-        console.log(`✅ Bucket "${BUCKET_NAME}" já existe`);
+        console.log(`[SUCCESS] Bucket "${BUCKET_NAME}" já existe`);
     }
 }
 
 async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, email: string) {
-    console.log('🚀 Iniciando upload e notificação...');
+    console.log('[INIT] Iniciando upload e notificação...');
     
     // Verificar se o arquivo existe
     try {
         await fs.access(filePath);
     } catch (error) {
-        console.error(`❌ Arquivo não encontrado: ${filePath}`);
+        console.error(`[ERROR] Arquivo não encontrado: ${filePath}`);
         return;
     }
 
@@ -59,7 +59,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
     const fileBuffer = await fs.readFile(filePath);
     const savedVideoKey = `${Date.now()}_${fileName}`;
 
-    console.log(`📤 Enviando arquivo para S3: ${fileName} -> ${savedVideoKey}`);
+    console.log(`[UPLOAD] Enviando arquivo para S3: ${fileName} -> ${savedVideoKey}`);
 
     // Upload para o S3
     await s3Client.send(new PutObjectCommand({
@@ -68,7 +68,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         Body: fileBuffer,
     }));
     
-    console.log('✅ Arquivo enviado ao S3:', savedVideoKey);
+    console.log('[SUCCESS] Arquivo enviado ao S3:', savedVideoKey);
 
     // Monta mensagem para a fila
     const messageBody = JSON.stringify({
@@ -79,9 +79,9 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         email,
     });
 
-    console.log('📨 Enviando mensagem para a fila...');
-    console.log('� Email a ser enviado:', email);
-    console.log('�📋 Dados da mensagem:', JSON.parse(messageBody));
+    console.log('[QUEUE] Enviando mensagem para a fila...');
+    console.log('[EMAIL] Email a ser enviado:', email);
+    console.log('[DATA] Dados da mensagem:', JSON.parse(messageBody));
 
     // Envia mensagem para a fila
     await sqsClient.send(new SendMessageCommand({
@@ -89,8 +89,8 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         MessageBody: messageBody,
     }));
     
-    console.log('✅ Mensagem enviada para a fila com sucesso!');
-    console.log('🎬 Upload concluído! O vídeo será processado em breve.');
+    console.log('[SUCCESS] Mensagem enviada para a fila com sucesso!');
+    console.log('[COMPLETE] Upload concluído! O vídeo será processado em breve.');
 }
 
 // Exemplo de uso
@@ -103,7 +103,7 @@ async function main() {
     try {
         await uploadVideoAndNotify(videoPath, type, registerId, email);
     } catch (error) {
-        console.error('❌ Erro no upload:', error);
+        console.error('[ERROR] Erro no upload:', error);
         process.exit(1);
     }
 }

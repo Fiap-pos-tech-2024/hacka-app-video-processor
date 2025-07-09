@@ -30,7 +30,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     const videoUrl = result.savedVideoKey ? this.buildS3Url(bucket, result.savedVideoKey) : undefined;
     const zipUrl = result.savedZipKey ? this.buildS3Url(bucket, result.savedZipKey) : undefined;
     
-    console.log('✅ Processamento concluído com sucesso:', {
+    console.log(' Processamento concluído com sucesso:', {
       registerId: result.registerId,
       savedVideoKey: result.savedVideoKey,
       videoUrl: videoUrl,
@@ -47,7 +47,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
   }
 
   async notifyError(context: any, error: any): Promise<void> {
-    console.error('❌ Erro no processamento:', {
+    console.error('Erro no processamento:', {
       context,
       error: error.message || error,
       stack: error.stack

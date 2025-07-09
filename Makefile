@@ -15,12 +15,12 @@ NC=\033[0m # No Color
 .PHONY: help up down clean logs status create-aws-resources create-env-file build dev test start
 
 help: ## Mostra este menu de ajuda
-	@echo "$(CYAN)🎬 Video Processor - Sistema de Deploy$(NC)"
+	@echo "$(CYAN)[VIDEO PROCESSOR] Sistema de Deploy$(NC)"
 	@echo "$(YELLOW)Comandos disponíveis:$(NC)"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 up: ## Inicia LocalStack e infraestrutura local
-	@echo "$(CYAN)🚀 Iniciando infraestrutura local...$(NC)"
+	@echo "$(CYAN)[INIT] Iniciando infraestrutura local...$(NC)"
 	docker run --rm -d \
 		-p 127.0.0.1:4566:4566 -p 127.0.0.1:4510-4559:4510-4559 \
 		--name $(LOCALSTACK_CONTAINER_NAME) \
@@ -29,7 +29,7 @@ up: ## Inicia LocalStack e infraestrutura local
 		-e PERSISTENCE=0 \
 		-e SERVICES=s3,sqs \
 		localstack/localstack:latest
-	@echo "$(GREEN)✅ LocalStack iniciado!$(NC)"
+	@echo "$(GREEN)[SUCCESS] LocalStack iniciado!$(NC)"
 	@sleep 5
 	@$(MAKE) create-aws-resources
 
@@ -37,29 +37,29 @@ down: ## Para e remove containers
 	@echo "$(YELLOW)🛑 Parando infraestrutura...$(NC)"
 	-docker stop $(LOCALSTACK_CONTAINER_NAME)
 	-docker rm $(LOCALSTACK_CONTAINER_NAME)
-	@echo "$(GREEN)✅ Infraestrutura parada!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Infraestrutura parada!$(NC)"
 
 clean: down ## Remove containers e limpa volumes
 	@echo "$(YELLOW)🧹 Limpando recursos...$(NC)"
 	-docker volume prune -f
 	-rm -f .env
-	@echo "$(GREEN)✅ Limpeza concluída!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Limpeza concluída!$(NC)"
 
 create-aws-resources: create-s3 create-queue ## Cria recursos AWS no LocalStack
-	@echo "$(GREEN)✅ Recursos AWS criados com sucesso!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Recursos AWS criados com sucesso!$(NC)"
 
 create-s3: ## Cria bucket S3 no LocalStack
-	@echo "$(CYAN)📦 Criando bucket S3...$(NC)"
+	@echo "$(CYAN)[S3] Criando bucket S3...$(NC)"
 	aws --endpoint-url=http://localhost:4566 s3api create-bucket --bucket $(BUCKET_NAME) || true
-	@echo "$(GREEN)✅ Bucket S3 criado: $(BUCKET_NAME)$(NC)"
+	@echo "$(GREEN)[SUCCESS] Bucket S3 criado: $(BUCKET_NAME)$(NC)"
 
 create-queue: ## Cria fila SQS no LocalStack
-	@echo "$(CYAN)📬 Criando fila SQS...$(NC)"
+	@echo "$(CYAN)[SQS] Criando fila SQS...$(NC)"
 	aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name $(QUEUE_NAME) || true
-	@echo "$(GREEN)✅ Fila SQS criada: $(QUEUE_NAME)$(NC)"
+	@echo "$(GREEN)[SUCCESS] Fila SQS criada: $(QUEUE_NAME)$(NC)"
 
 create-env-file: ## Cria arquivo .env para desenvolvimento local
-	@echo "$(CYAN)📝 Criando arquivo .env...$(NC)"
+	@echo "$(CYAN)[ENV] Criando arquivo .env...$(NC)"
 	echo "# Video Processor - Configurações Locais" > .env
 	echo "NODE_ENV=development" >> .env
 	echo "PORT=3000" >> .env
@@ -70,10 +70,10 @@ create-env-file: ## Cria arquivo .env para desenvolvimento local
 	echo "S3_BUCKET=$(BUCKET_NAME)" >> .env
 	QUEUE_URL=$$(aws --endpoint-url=http://localhost:4566 sqs get-queue-url --queue-name $(QUEUE_NAME) --output text --query 'QueueUrl' 2>/dev/null || echo "http://localhost:4566/000000000000/$(QUEUE_NAME)"); \
 	echo "SQS_QUEUE_URL=$$QUEUE_URL" >> .env
-	@echo "$(GREEN)✅ Arquivo .env criado!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Arquivo .env criado!$(NC)"
 
 create-env-docker: ## Cria arquivo .env para Docker Compose
-	@echo "$(CYAN)📝 Criando arquivo .env para Docker...$(NC)"
+	@echo "$(CYAN)[ENV] Criando arquivo .env para Docker...$(NC)"
 	echo "# Video Processor - Configurações Docker" > .env
 	echo "NODE_ENV=development" >> .env
 	echo "PORT=3000" >> .env
@@ -83,15 +83,15 @@ create-env-docker: ## Cria arquivo .env para Docker Compose
 	echo "AWS_ENDPOINT=http://localstack:4566" >> .env
 	echo "S3_BUCKET=$(BUCKET_NAME)" >> .env
 	echo "SQS_QUEUE_URL=http://localstack:4566/000000000000/$(QUEUE_NAME)" >> .env
-	@echo "$(GREEN)✅ Arquivo .env para Docker criado!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Arquivo .env para Docker criado!$(NC)"
 
 build: ## Constrói a imagem Docker
 	@echo "$(CYAN)🔨 Construindo imagem Docker...$(NC)"
 	docker build -t video-processor:latest .
-	@echo "$(GREEN)✅ Imagem construída com sucesso!$(NC)"
+	@echo "$(GREEN)[SUCCESS] Imagem construída com sucesso!$(NC)"
 
 dev: up create-env-file ## Inicia ambiente de desenvolvimento completo
-	@echo "$(GREEN)🎯 Ambiente de desenvolvimento pronto!$(NC)"
+	@echo "$(GREEN)[READY] Ambiente de desenvolvimento pronto!$(NC)"
 	@echo "$(YELLOW)Para testar a aplicação:$(NC)"
 	@echo "  1. Execute: npm run dev"
 	@echo "  2. Ou use: make start"
