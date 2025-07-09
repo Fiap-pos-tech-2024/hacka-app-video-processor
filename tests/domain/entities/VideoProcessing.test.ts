@@ -1,4 +1,4 @@
-import { VideoProcessing, VideoProcessingData } from '../../../src/domain/entities/VideoProcessing';
+import { VideoProcessing, VideoProcessingData } from '../../../src/domain/entities/VideoProcessing.js';
 
 describe('VideoProcessing Entity', () => {
   const mockData: VideoProcessingData = {

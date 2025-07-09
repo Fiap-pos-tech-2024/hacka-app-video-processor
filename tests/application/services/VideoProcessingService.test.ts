@@ -1,4 +1,4 @@
-import { VideoProcessingService } from '../../../src/application/services/VideoProcessingService';
+import { VideoProcessingService } from '../../../src/application/services/VideoProcessingService.js';
 
 // Mock dos casos de uso
 const createMockProcessVideoUseCase = () => ({

@@ -1,6 +1,6 @@
-import { ProcessVideoUseCase } from '../../../src/domain/useCases/ProcessVideoUseCase';
-import { VideoProcessingMessage } from '../../../src/domain/entities/QueueMessage';
-import { createMockPorts } from '../../mocks/ports';
+import { ProcessVideoUseCase } from '../../../src/domain/useCases/ProcessVideoUseCase.js';
+import { VideoProcessingMessage } from '../../../src/domain/entities/QueueMessage.js';
+import { createMockPorts } from '../../mocks/ports.js';
 
 // Mock do uuid
 jest.mock('uuid', () => ({

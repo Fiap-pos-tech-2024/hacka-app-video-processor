@@ -1,5 +1,5 @@
-import { CreateQueueUseCase } from '../../../src/domain/useCases/CreateQueueUseCase';
-import { MockQueuePort } from '../../mocks/ports';
+import { CreateQueueUseCase } from '../../../src/domain/useCases/CreateQueueUseCase.js';
+import { MockQueuePort } from '../../mocks/ports.js';
 
 describe('CreateQueueUseCase', () => {
   let useCase: CreateQueueUseCase;

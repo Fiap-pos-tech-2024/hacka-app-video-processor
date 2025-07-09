@@ -1,4 +1,4 @@
-import { QueueMessage, VideoProcessingMessage } from '../../../src/domain/entities/QueueMessage';
+import { QueueMessage, VideoProcessingMessage } from '../../../src/domain/entities/QueueMessage.js';
 
 describe('QueueMessage Entities', () => {
   describe('VideoProcessingMessage', () => {
