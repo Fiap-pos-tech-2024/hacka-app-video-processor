@@ -2,6 +2,8 @@ import { NotificationPort } from '../../domain/ports/NotificationPort.js';
 import { ProcessingResult } from '../../domain/entities/VideoProcessing.js';
 
 export class ConsoleNotificationAdapter implements NotificationPort {
+  private readonly notificationUrl = 'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com/api/notify/success';
+  
   constructor(private readonly s3Config?: { endpoint?: string; bucket: string }) {}
 
   private buildS3Url(bucket: string, key: string): string {
@@ -42,8 +44,13 @@ export class ConsoleNotificationAdapter implements NotificationPort {
       zipUrl: zipUrl
     });
     
-    // TODO: Implementar notificação real para sistema externo
-    // Por exemplo: fazer HTTP POST para webhook, enviar para outro SQS, etc.
+    // Enviar notificação para API externa
+    try {
+      await this.sendSuccessNotification(result, zipUrl);
+    } catch (error) {
+      console.error('❌ Erro ao enviar notificação para API externa:', error);
+      // Não falha o processamento por causa da notificação
+    }
   }
 
   async notifyError(context: any, error: any): Promise<void> {
@@ -55,5 +62,43 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     
     // TODO: Implementar notificação de erro para sistema externo
     // Por exemplo: enviar email, salvar em log centralizado, etc.
+  }
+
+  private async sendSuccessNotification(result: ProcessingResult, zipUrl?: string): Promise<void> {
+    if (!result.user?.email || !result.user?.authorization) {
+      console.warn('⚠️ Email ou autorização do usuário não encontrados, pulando notificação externa');
+      return;
+    }
+
+    if (!zipUrl) {
+      console.warn('⚠️ URL do ZIP não encontrada, pulando notificação externa');
+      return;
+    }
+
+    const payload = {
+      to: result.user.email,
+      message: "Success!",
+      file: zipUrl
+    };
+
+    console.log('📤 Enviando notificação para API externa:', this.notificationUrl);
+    console.log('📋 Payload:', payload);
+
+    const response = await fetch(this.notificationUrl, {
+      method: 'POST',
+      headers: {
+        'accept': '*/*',
+        'Authorization': result.user.authorization,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
+
+    console.log('✅ Notificação enviada com sucesso para API externa');
   }
 }

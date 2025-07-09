@@ -102,9 +102,9 @@ async function main() {
     const type = 'test-video';
     const registerId = `test-${Date.now()}`;
     const user = {
-        id: 'user-123',
-        email: 'usuario@exemplo.com',
-        authorization: 'Bearer token123'
+        id: '54c844b8-d061-70fd-af1a-f30728e48525',
+        email: 'erik.fernandes87@gmail.com',
+        authorization: 'Bearer eyJraWQiOiJyR05IZWRVS3JCR0NnR1haUTJuY3lNcnJvb3BVaDRDenNUSUVBNEorNnVVPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI1NGM4NDRiOC1kMDYxLTcwZmQtYWYxYS1mMzA3MjhlNDg1MjUiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV9nYkJxSWM0VWgiLCJjbGllbnRfaWQiOiI2NzdpczRqMmU5cGd2amJzZDRzZDlya244YyIsIm9yaWdpbl9qdGkiOiJkOTliYjRkMi05NzczLTRjZjEtOGFhNS04NDlhZTYxMjQxOGQiLCJldmVudF9pZCI6ImIxNTM5M2UyLWUwZGUtNDUxZi04ZTA5LWYxMGU1MDQ0MDc5ZiIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3NTIwOTk4NTMsImV4cCI6MTc1MjEwMzQ1MywiaWF0IjoxNzUyMDk5ODUzLCJqdGkiOiJjNGRmY2FjNC1iZmY5LTQ5ZTAtYTRjMC1kNzc4YWI2OGI4YmUiLCJ1c2VybmFtZSI6IjU0Yzg0NGI4LWQwNjEtNzBmZC1hZjFhLWYzMDcyOGU0ODUyNSJ9.U7688us_Rhnb-XxuSMDl80h6GOd98ukXb2bTYgX8Tv2A7Grtyb0RFtIGXk00SjIdrXr_E_Ou0-NQnbBur3HpBXXvdbAdObbwGH4XTiX3QjtD5OJUJUO67TGa2VZIVm0Spo6LnXpnNP_kfAccd3aXOJXPhoy1U2s_ypFOVwrqzq-LdENRj4DGM4Q8WdjewZNDwCApw6FDz0HkUqjILrJ2f37Y_ugNpc5_P9Z6ZWH1FqRf6y_zIwoBuLaEaFTgLYmoCwJPixwEAuE_69P1Nfz9aJA5Pjj87mcUx_zD71S3EMVwNrrGcSjQOV_NXWC5LWGZh2O5fccxwK8xziTOe_z2fA'
     };
 
     try {
