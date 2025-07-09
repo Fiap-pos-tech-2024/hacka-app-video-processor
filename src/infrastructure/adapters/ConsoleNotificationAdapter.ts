@@ -30,7 +30,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     const videoUrl = result.savedVideoKey ? this.buildS3Url(bucket, result.savedVideoKey) : undefined;
     const zipUrl = result.savedZipKey ? this.buildS3Url(bucket, result.savedZipKey) : undefined;
     
-    console.log(' Processamento concluído com sucesso:', {
+    console.log('Processamento concluído com sucesso:', {
       registerId: result.registerId,
       savedVideoKey: result.savedVideoKey,
       videoUrl: videoUrl,

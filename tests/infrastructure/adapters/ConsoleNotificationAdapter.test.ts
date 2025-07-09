@@ -1,5 +1,5 @@
-import { ConsoleNotificationAdapter } from '../../../src/infrastructure/adapters/ConsoleNotificationAdapter';
-import { ProcessingResult } from '../../../src/domain/entities/VideoProcessing';
+import { ConsoleNotificationAdapter } from '../../../src/infrastructure/adapters/ConsoleNotificationAdapter.js';
+import { ProcessingResult } from '../../../src/domain/entities/VideoProcessing.js';
 
 describe('ConsoleNotificationAdapter', () => {
   let adapter: ConsoleNotificationAdapter;
@@ -44,7 +44,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.log).toHaveBeenCalledWith(
-        '✅ Processamento concluído com sucesso:',
+        'Processamento concluído com sucesso:',
         {
           registerId: 'test-123',
           savedVideoKey: 'videos/test.mp4',
@@ -74,7 +74,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.log).toHaveBeenCalledWith(
-        '✅ Processamento concluído com sucesso:',
+        'Processamento concluído com sucesso:',
         {
           registerId: 'test-456',
           savedVideoKey: 'videos/test2.mp4',
@@ -121,7 +121,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        '❌ Erro no processamento:',
+        'Erro no processamento:',
         {
           context,
           error: 'Processing failed',
@@ -141,7 +141,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        '❌ Erro no processamento:',
+        'Erro no processamento:',
         {
           context,
           error: 'Simple error string',
@@ -160,7 +160,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        '❌ Erro no processamento:',
+        'Erro no processamento:',
         {
           context,
           error: { someProperty: 'value' },
@@ -179,12 +179,12 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledTimes(2);
-      expect(consoleSpy.error).toHaveBeenNthCalledWith(1, '❌ Erro no processamento:', {
+      expect(consoleSpy.error).toHaveBeenNthCalledWith(1, 'Erro no processamento:', {
         context: null,
         error: 'Test error',
         stack: expect.any(String)
       });
-      expect(consoleSpy.error).toHaveBeenNthCalledWith(2, '❌ Erro no processamento:', {
+      expect(consoleSpy.error).toHaveBeenNthCalledWith(2, 'Erro no processamento:', {
         context: undefined,
         error: 'Test error',
         stack: expect.any(String)
@@ -201,7 +201,7 @@ describe('ConsoleNotificationAdapter', () => {
 
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        '❌ Erro no processamento:',
+        'Erro no processamento:',
         {
           context: {},
           error: 'Empty context test',
