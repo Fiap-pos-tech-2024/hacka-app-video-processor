@@ -186,6 +186,28 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Adicionar permissões ECR para a execution role
+resource "aws_iam_role_policy" "ecs_task_execution_ecr_policy" {
+  name = "video-processor-execution-ecr-policy"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 # === CloudWatch Log Group ===
 
 resource "aws_cloudwatch_log_group" "video_processor" {
@@ -227,8 +249,8 @@ resource "aws_ecs_task_definition" "this" {
   family                   = "video-processor"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = 512  # Mais CPU para processamento de vídeo
-  memory                   = 1024 # Mais memória para processamento de vídeo
+  cpu                      = 256  # Reduzir CPU para teste
+  memory                   = 512  # Reduzir memória para teste
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.video_processor_task_role.arn
 
@@ -236,6 +258,7 @@ resource "aws_ecs_task_definition" "this" {
     {
       name  = "video-processor"
       image = "497986631333.dkr.ecr.us-east-1.amazonaws.com/hacka-app-processor:latest"
+      essential = true
       environment = [
         { name = "AWS_REGION", value = "us-east-1" },
         { name = "S3_BUCKET", value = aws_s3_bucket.video_processor_storage.bucket },
@@ -249,6 +272,13 @@ resource "aws_ecs_task_definition" "this" {
           awslogs-region        = "us-east-1"
           awslogs-stream-prefix = "ecs"
         }
+      },
+      healthCheck = {
+        command = ["CMD-SHELL", "echo 'healthy'"]
+        interval = 30
+        timeout = 5
+        retries = 3
+        startPeriod = 60
       }
     }
   ])
