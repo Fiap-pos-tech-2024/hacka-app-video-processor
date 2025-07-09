@@ -23,7 +23,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::816069165502:role/gh-actions-video-upload-service-role
+          role-to-assume: arn:aws:iam::497986631333:role/gh-actions-video-upload-service-role
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
