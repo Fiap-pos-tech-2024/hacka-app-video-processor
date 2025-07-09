@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, CreateBucketCommand } from '@aws-sdk/client-s3';   
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -41,7 +41,7 @@ async function createBucketIfNotExists() {
     }
 }
 
-async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, email: string) {
+async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, user: { id: string; email: string; authorization: string }) {
     console.log('🚀 Iniciando upload e notificação...');
     
     // Verificar se o arquivo existe
@@ -76,11 +76,14 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         savedVideoKey,
         originalVideoName: fileName,
         type,
-        email,
+        user: {
+            id: user.id,
+            email: user.email,
+            authorization: user.authorization,
+        },
     });
 
     console.log('📨 Enviando mensagem para a fila...');
-    console.log('� Email a ser enviado:', email);
     console.log('�📋 Dados da mensagem:', JSON.parse(messageBody));
 
     // Envia mensagem para a fila
@@ -98,10 +101,14 @@ async function main() {
     const videoPath = path.join(process.cwd(), 'video', 'videoplayback.mp4');
     const type = 'test-video';
     const registerId = `test-${Date.now()}`;
-    const email = 'usuario@exemplo.com'; // Email para notificação
+    const user = {
+        id: 'user-123',
+        email: 'usuario@exemplo.com',
+        authorization: 'Bearer token123'
+    };
 
     try {
-        await uploadVideoAndNotify(videoPath, type, registerId, email);
+        await uploadVideoAndNotify(videoPath, type, registerId, user);
     } catch (error) {
         console.error('❌ Erro no upload:', error);
         process.exit(1);

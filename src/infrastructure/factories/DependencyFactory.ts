@@ -25,8 +25,8 @@ export class DependencyFactory {
       region: config.aws.region,
     };
     
-    // Apenas adiciona endpoint e credentials se não estiver em produção
-    if (process.env.NODE_ENV !== 'production') {
+    // Adiciona endpoint e credentials se estivermos usando LocalStack ou desenvolvimento
+    if (config.aws.endpoint) {
       sqsConfig.endpoint = config.aws.endpoint;
       sqsConfig.credentials = config.aws.credentials;
       s3Config.endpoint = config.aws.endpoint;

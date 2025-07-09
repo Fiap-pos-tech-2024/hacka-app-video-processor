@@ -73,7 +73,7 @@ export class ProcessVideoUseCase {
       savedVideoKey: videoProcessing.savedVideoKey,
       originalVideoName: videoProcessing.originalVideoName,
       type: videoProcessing.type,
-      email: videoProcessing.email
+      user: videoProcessing.user
     };
 
     try {

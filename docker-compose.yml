@@ -26,5 +26,10 @@ services:
       - ./outputs:/app/outputs
       - ./tmp:/app/tmp
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
+      - AWS_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - S3_BUCKET=poc-bucket
 
