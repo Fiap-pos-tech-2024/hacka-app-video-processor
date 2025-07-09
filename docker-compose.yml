@@ -31,5 +31,5 @@ services:
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
-      - S3_BUCKET=poc-bucket
+      - S3_BUCKET=fiap-video-bucket-20250706
 

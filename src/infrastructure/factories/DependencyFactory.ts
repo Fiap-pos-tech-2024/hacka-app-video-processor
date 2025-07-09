@@ -73,7 +73,8 @@ export class DependencyFactory {
       this.createStorageAdapter(),
       this.createFileSystemAdapter(),
       this.createVideoProcessorAdapter(),
-      this.createNotificationAdapter()
+      this.createNotificationAdapter(),
+      this.config.s3.bucket
     );
   }
 

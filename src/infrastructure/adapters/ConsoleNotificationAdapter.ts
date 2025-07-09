@@ -26,7 +26,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
   }
 
   async notifySuccess(result: ProcessingResult): Promise<void> {
-    const bucket = this.s3Config?.bucket || 'poc-bucket';
+    const bucket = this.s3Config?.bucket || 'fiap-video-bucket-20250706';
     
     // Construir URLs completas
     const videoUrl = result.savedVideoKey ? this.buildS3Url(bucket, result.savedVideoKey) : undefined;

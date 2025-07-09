@@ -36,7 +36,7 @@ export const defaultConfig: AppConfig = {
   },
   s3: {
     forcePathStyle: process.env.NODE_ENV !== 'production',
-    bucket: process.env.S3_BUCKET || 'poc-bucket',
+    bucket: process.env.S3_BUCKET || 'fiap-video-bucket-20250706',
   },
   queue: {
     name: process.env.SQS_QUEUE_URL ? 'video-processing-queue' : 'video_processed',
