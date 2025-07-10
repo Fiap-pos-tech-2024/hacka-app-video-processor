@@ -1,10 +1,10 @@
-import { S3Client, PutObjectCommand, CreateBucketCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, CreateBucketCommand } from '@aws-sdk/client-s3';   
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { promises as fs } from 'fs';
 import path from 'path';
 
 // Configurações
-const BUCKET_NAME = 'poc-bucket';
+const BUCKET_NAME = 'fiap-video-bucket-20250706';
 const QUEUE_URL = 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/video_processed';
 
 const s3Client = new S3Client({
@@ -41,7 +41,7 @@ async function createBucketIfNotExists() {
     }
 }
 
-async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, email: string) {
+async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, user: { id: string; email: string; authorization: string }) {
     console.log('🚀 Iniciando upload e notificação...');
     
     // Verificar se o arquivo existe
@@ -76,11 +76,14 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         savedVideoKey,
         originalVideoName: fileName,
         type,
-        email,
+        user: {
+            id: user.id,
+            email: user.email,
+            authorization: user.authorization,
+        },
     });
 
     console.log('📨 Enviando mensagem para a fila...');
-    console.log('� Email a ser enviado:', email);
     console.log('�📋 Dados da mensagem:', JSON.parse(messageBody));
 
     // Envia mensagem para a fila
@@ -97,11 +100,15 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
 async function main() {
     const videoPath = path.join(process.cwd(), 'video', 'videoplayback.mp4');
     const type = 'test-video';
-    const registerId = `test-${Date.now()}`;
-    const email = 'usuario@exemplo.com'; // Email para notificação
+    const registerId = '1'; // ID que será usado na URL da API do microserviço
+    const user = {
+        id: '54c844b8-d061-70fd-af1a-f30728e48525',
+        email: 'erik.fernandes87@gmail.com',
+        authorization: 'Bearer eyJraWQiOiJyR05IZWRVS3JCR0NnR1haUTJuY3lNcnJvb3BVaDRDenNUSUVBNEorNnVVPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI1NGM4NDRiOC1kMDYxLTcwZmQtYWYxYS1mMzA3MjhlNDg1MjUiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV9nYkJxSWM0VWgiLCJjbGllbnRfaWQiOiI2NzdpczRqMmU5cGd2amJzZDRzZDlya244YyIsIm9yaWdpbl9qdGkiOiIxYTZkMmQ4NS04NmMxLTRiM2EtYWI5Ny1mMjM1NGYzYzQwYzciLCJldmVudF9pZCI6ImYwOGM1ZWQ0LWVkY2YtNDg3MC1hMDdkLTUxNDE4ODY1ODA0YyIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3NTIxMDQxNTgsImV4cCI6MTc1MjEwNzc1OCwiaWF0IjoxNzUyMTA0MTU4LCJqdGkiOiI4ZmZkYzhjYy1iZGJiLTQ3MGUtOGRmZC1iZmFmYmUyZTQzMGMiLCJ1c2VybmFtZSI6IjU0Yzg0NGI4LWQwNjEtNzBmZC1hZjFhLWYzMDcyOGU0ODUyNSJ9.BvKQWxFIxh4IMP9AkAJ1nSJLhxUdwWxRch-Y8Ay2hf8DwJKs_zll16vzXFqtvadSp10eeE7BeEM265N6DqbbW2d8MFqMD-mDSUZwDwc_Cj2W_X4rnoBkaOJHf8_j5q230qytQ8oRKu9DLvmHKk834tF4jdf1-iSaEv2WC12g1po2_YAPQUPoU_kLbZEJERfUzDMIvGbeAdrk6KhQJsexx_wWb7PhFmHmJqprkKdx18oJBc_kUWLTzteYXfTsjILSFD2fzP8Z9BENfMBXVOax-4eFKlJ9sKbui_UW8vrLprd_ul0xGrWN9_z5JazmKSr_8jvjAqM1V6SqMVwq1Y0J_w'
+    };
 
     try {
-        await uploadVideoAndNotify(videoPath, type, registerId, email);
+        await uploadVideoAndNotify(videoPath, type, registerId, user);
     } catch (error) {
         console.error('❌ Erro no upload:', error);
         process.exit(1);

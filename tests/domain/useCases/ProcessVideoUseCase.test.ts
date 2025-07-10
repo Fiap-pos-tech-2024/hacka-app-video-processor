@@ -18,7 +18,8 @@ describe('ProcessVideoUseCase', () => {
       mocks.storagePort,
       mocks.fileSystemPort,
       mocks.videoProcessorPort,
-      mocks.notificationPort
+      mocks.notificationPort,
+      'fiap-video-bucket-20250706'
     );
 
     // Reset all mocks
@@ -68,7 +69,7 @@ describe('ProcessVideoUseCase', () => {
 
       // Assert
       expect(mocks.queuePort.receiveMessages).toHaveBeenCalledWith(queueUrl);
-      expect(mocks.storagePort.downloadFile).toHaveBeenCalledWith('poc-bucket', 'test-video.mp4');
+      expect(mocks.storagePort.downloadFile).toHaveBeenCalledWith('fiap-video-bucket-20250706', 'test-video.mp4');
       expect(mocks.notificationPort.notifySuccess).toHaveBeenCalled();
       expect(mocks.queuePort.deleteMessage).toHaveBeenCalledWith(queueUrl, 'receipt-handle-123');
     });
@@ -231,7 +232,7 @@ describe('ProcessVideoUseCase', () => {
       await useCase.execute(queueUrl);
 
       // Assert - Verify workflow steps
-      expect(mocks.storagePort.downloadFile).toHaveBeenCalledWith('poc-bucket', 'videos/test-video.mp4');
+      expect(mocks.storagePort.downloadFile).toHaveBeenCalledWith('fiap-video-bucket-20250706', 'videos/test-video.mp4');
       expect(mocks.fileSystemPort.writeFile).toHaveBeenCalled();
       expect(mocks.videoProcessorPort.extractFrames).toHaveBeenCalled();
       expect(mocks.videoProcessorPort.createZipFromFrames).toHaveBeenCalled();

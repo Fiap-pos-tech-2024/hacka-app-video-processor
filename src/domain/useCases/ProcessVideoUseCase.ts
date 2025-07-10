@@ -14,7 +14,8 @@ export class ProcessVideoUseCase {
     private readonly storagePort: StoragePort,
     private readonly fileSystemPort: FileSystemPort,
     private readonly videoProcessorPort: VideoProcessorPort,
-    private readonly notificationPort: NotificationPort
+    private readonly notificationPort: NotificationPort,
+    private readonly bucketName: string
   ) {}
 
   async execute(queueUrl: string): Promise<void> {
@@ -73,12 +74,12 @@ export class ProcessVideoUseCase {
       savedVideoKey: videoProcessing.savedVideoKey,
       originalVideoName: videoProcessing.originalVideoName,
       type: videoProcessing.type,
-      email: videoProcessing.email
+      user: videoProcessing.user
     };
 
     try {
       // Download do arquivo do S3
-      const fileBuffer = await this.storagePort.downloadFile('poc-bucket', videoProcessing.savedVideoKey);
+      const fileBuffer = await this.storagePort.downloadFile(this.bucketName, videoProcessing.savedVideoKey);
       if (!fileBuffer) {
         throw new Error('Arquivo não encontrado no S3');
       }
@@ -109,7 +110,7 @@ export class ProcessVideoUseCase {
       // Criar ZIP e fazer upload para S3
       const zipName = `frames_${id}.zip`;
       const zipPath = path.join(outputDir, zipName);
-      const savedZipKey = await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath, 'poc-bucket');
+      const savedZipKey = await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath, this.bucketName);
 
       // Limpeza
       await this.fileSystemPort.remove(tempFramesDir);

@@ -19,6 +19,7 @@ export class MockStoragePort implements StoragePort {
 export class MockFileSystemPort implements FileSystemPort {
   mkdir = jest.fn();
   writeFile = jest.fn();
+  readFile = jest.fn();
   readdir = jest.fn();
   remove = jest.fn();
   ensureDir = jest.fn();

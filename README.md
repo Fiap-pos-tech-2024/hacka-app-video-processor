@@ -2,35 +2,36 @@
 
 > Serviço de processamento de vídeos com arquitetura hexagonal que monitora fila SQS, processa vídeos do S3 e extrai frames usando FFmpeg.
 
-## � Executando com Docker (Recomendado)
+## 🚀 DEPLOY PARA PRODUÇÃO AWS
 
-### Pré-requisitos
+### ⚡ Configuração Rápida
 
-- **Docker** e **Docker Compose**
-
-### Execução Simples
-
-1. **Windows:**
+1. **Copie o arquivo de produção:**
    ```bash
-   start.bat
+   cp .env.production .env
    ```
 
-2. **Linux/Mac:**
+2. **Build e deploy:**
    ```bash
-   chmod +x start.sh
-   ./start.sh
+   docker build -t video-processor .
+   docker run --env-file .env video-processor
    ```
 
-3. **Manual:**
-   ```bash
-   docker-compose up --build
-   ```
+3. **Pronto!** ✅ A aplicação conectará automaticamente em:
+   - 📥 **SQS**: `https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue`
+   - 📦 **S3**: `fiap-video-bucket-20250706`
+   - 🔔 **APIs**: Configuradas automaticamente
 
-### Como Usar
+### 🔧 Configurações AWS Necessárias
 
-1. Coloque seu vídeo na pasta `video/`
-2. A aplicação irá processar automaticamente e gerar frames na pasta `outputs/`
-3. Para parar: `docker-compose down`
+- ✅ **IAM Role** com permissões para SQS e S3
+- ✅ **SQS Queue**: `video-processing-queue` criada
+- ✅ **S3 Bucket**: `fiap-video-bucket-20250706` criado
+- ✅ **Security Groups** permitindo tráfego HTTPS para APIs
+
+📋 **Veja detalhes completos em**: [`AWS_DEPLOYMENT.md`](./AWS_DEPLOYMENT.md)
+
+---
 
 ## 🚀 Desenvolvimento Local
 
@@ -206,9 +207,9 @@ Para deploy em produção:
 3. Configure as variáveis de ambiente
 4. Execute `npm run build && npm start`
 
-
-
+```bash
 cd hacka-app-processor
 npm run build
 docker build -t maickway/video-processor:latest .
 docker push maickway/video-processor:latest
+```
