@@ -10,26 +10,12 @@ export class FFmpegVideoProcessor implements VideoProcessorPort {
   constructor(
     private readonly fileSystemPort: FileSystemPort,
     private readonly storagePort: StoragePort,
-    private readonly s3Config?: { endpoint?: string; bucket: string }
+    private readonly bucket: string
   ) {}
 
   private buildS3Url(bucket: string, key: string): string {
-    const baseEndpoint = this.s3Config?.endpoint || 'https://s3.amazonaws.com';
-    
-    // Para LocalStack ou endpoints customizados com forcePathStyle
-    if (this.s3Config?.endpoint && (this.s3Config.endpoint.includes('localhost') || this.s3Config.endpoint.includes('localstack'))) {
-      let cleanEndpoint = baseEndpoint.replace(/\/$/, '');
-      
-      // Se estivermos em um container e a URL contém 'localstack', substitui por localhost para acesso externo
-      if (cleanEndpoint.includes('localstack')) {
-        cleanEndpoint = cleanEndpoint.replace('localstack', 'localhost');
-      }
-      
-      return `${cleanEndpoint}/${bucket}/${key}`;
-    }
-    
-    // Para AWS S3 real
-    return `https://${bucket}.s3.amazonaws.com/${key}`;
+    // Sempre usar AWS S3 real com URL regional correta
+    return `https://${bucket}.s3.us-east-1.amazonaws.com/${key}`;
   }
 
   async extractFrames(inputPath: string, outputDir: string): Promise<string[]> {

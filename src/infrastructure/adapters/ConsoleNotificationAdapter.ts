@@ -10,29 +10,15 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     ? `${process.env.EXTERNAL_API_URL}/video-upload-app/video`
     : 'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com/video-upload-app/video';
   
-  constructor(private readonly s3Config?: { endpoint?: string; bucket: string }) {}
+  constructor(private readonly bucket: string) {}
 
   private buildS3Url(bucket: string, key: string): string {
-    const baseEndpoint = this.s3Config?.endpoint || 'https://s3.amazonaws.com';
-    
-    // Para LocalStack ou endpoints customizados com forcePathStyle
-    if (this.s3Config?.endpoint && (this.s3Config.endpoint.includes('localhost') || this.s3Config.endpoint.includes('localstack'))) {
-      let cleanEndpoint = baseEndpoint.replace(/\/$/, '');
-      
-      // Se estivermos em um container e a URL contém 'localstack', substitui por localhost para acesso externo
-      if (cleanEndpoint.includes('localstack')) {
-        cleanEndpoint = cleanEndpoint.replace('localstack', 'localhost');
-      }
-      
-      return `${cleanEndpoint}/${bucket}/${key}`;
-    }
-    
-    // Para AWS S3 real
-    return `https://${bucket}.s3.amazonaws.com/${key}`;
+    // Sempre usar AWS S3 real com URL regional correta
+    return `https://${bucket}.s3.us-east-1.amazonaws.com/${key}`;
   }
 
   async notifySuccess(result: ProcessingResult): Promise<void> {
-    const bucket = this.s3Config?.bucket || 'fiap-video-bucket-20250706';
+    const bucket = this.bucket;
     
     // Construir URLs completas
     const videoUrl = result.savedVideoKey ? this.buildS3Url(bucket, result.savedVideoKey) : undefined;

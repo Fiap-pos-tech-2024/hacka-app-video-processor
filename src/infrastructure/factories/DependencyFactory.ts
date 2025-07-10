@@ -17,22 +17,15 @@ export class DependencyFactory {
   constructor(config: AppConfig) {
     this.config = config;
     
-    const sqsConfig: any = {
-      region: config.aws.region,
+    // Configuração hardcoded para produção AWS
+    const sqsConfig = {
+      region: 'us-east-1',
     };
     
-    const s3Config: any = {
-      region: config.aws.region,
+    const s3Config = {
+      region: 'us-east-1',
+      forcePathStyle: false,
     };
-    
-    // Adiciona endpoint e credentials se estivermos usando LocalStack ou desenvolvimento
-    if (config.aws.endpoint) {
-      sqsConfig.endpoint = config.aws.endpoint;
-      sqsConfig.credentials = config.aws.credentials;
-      s3Config.endpoint = config.aws.endpoint;
-      s3Config.credentials = config.aws.credentials;
-      s3Config.forcePathStyle = config.s3.forcePathStyle;
-    }
     
     this.sqsClient = new SQSClient(sqsConfig);
     this.s3Client = new S3Client(s3Config);
@@ -43,7 +36,7 @@ export class DependencyFactory {
   }
 
   createStorageAdapter(): AWSS3Adapter {
-    return new AWSS3Adapter(this.s3Client, this.config.aws.endpoint);
+    return new AWSS3Adapter(this.s3Client);
   }
 
   createFileSystemAdapter(): NodeFileSystemAdapter {
@@ -53,18 +46,12 @@ export class DependencyFactory {
     return new FFmpegVideoProcessor(
       this.createFileSystemAdapter(),
       this.createStorageAdapter(),
-      {
-        endpoint: this.config.aws.endpoint,
-        bucket: this.config.s3.bucket
-      }
+      'fiap-video-bucket-20250706'
     );
   }
 
   createNotificationAdapter(): ConsoleNotificationAdapter {
-    return new ConsoleNotificationAdapter({
-      endpoint: this.config.aws.endpoint,
-      bucket: this.config.s3.bucket
-    });
+    return new ConsoleNotificationAdapter('fiap-video-bucket-20250706');
   }
 
   createProcessVideoUseCase(): ProcessVideoUseCase {
@@ -74,7 +61,7 @@ export class DependencyFactory {
       this.createFileSystemAdapter(),
       this.createVideoProcessorAdapter(),
       this.createNotificationAdapter(),
-      this.config.s3.bucket
+      'fiap-video-bucket-20250706'
     );
   }
 

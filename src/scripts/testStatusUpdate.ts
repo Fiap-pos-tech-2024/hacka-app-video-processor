@@ -10,10 +10,7 @@ async function testStatusUpdate() {
     console.log('🧪 Testando atualização de status na API do microserviço...\n');
 
     // Configuração do adapter com dados de teste
-    const adapter = new ConsoleNotificationAdapter({
-        endpoint: 'http://localhost:4566',
-        bucket: 'poc-bucket'
-    });
+    const adapter = new ConsoleNotificationAdapter('fiap-video-bucket-20250706');
 
     // Dados de exemplo para teste
     const testResult: ProcessingResult = {

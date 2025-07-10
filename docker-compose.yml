@@ -1,21 +1,4 @@
 services:
-  localstack:
-    image: localstack/localstack:latest
-    ports:
-      - "4566:4566"
-      - "4576:4576"
-    environment:
-      - SERVICES=sqs,s3
-      - DEBUG=1
-    volumes:
-      - ./localstack:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
   app:
     build: .
     volumes:
@@ -26,8 +9,4 @@ services:
       - ~/.aws:/root/.aws:ro
     environment:
       - NODE_ENV=production
-      - AWS_REGION=us-east-1
-      - S3_BUCKET=fiap-video-bucket-20250706
-      - SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue
-      - SQS_QUEUE_NAME=video-processing-queue
 

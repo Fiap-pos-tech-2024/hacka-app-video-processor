@@ -6,29 +6,29 @@ async function main(): Promise<void> {
   try {
     console.log('[STARTUP] Iniciando aplicação de processamento de vídeos...');
     
-    // Criar factory de dependências
+    // Configurações hardcoded para produção
+    const queueUrl = 'https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue';
+    const bucketName = 'fiap-video-bucket-20250706';
+    
+    // Criar factory de dependências (config não é mais usado internamente)
     const dependencyFactory = new DependencyFactory(defaultConfig);
     
     // Criar casos de uso
     const processVideoUseCase = dependencyFactory.createProcessVideoUseCase();
     const createQueueUseCase = dependencyFactory.createCreateQueueUseCase();
     
-    // Determinar a URL da fila - usar diretamente se fornecida via env, senão criar
-    const queueUrl = defaultConfig.queue.url || '';
-    const queueName = defaultConfig.queue.name;
-    
-    console.log('-  Configurações:');
-    console.log(`   - Região AWS: ${defaultConfig.aws.region}`);
-    console.log(`   - Bucket S3: ${defaultConfig.s3.bucket}`);
-    console.log(`   - Fila SQS: ${queueUrl || queueName}`);
-    console.log(`   - Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log('-  Configurações de Produção:');
+    console.log(`   - Região AWS: us-east-1`);
+    console.log(`   - Bucket S3: ${bucketName}`);
+    console.log(`   - Fila SQS: ${queueUrl}`);
+    console.log(`   - Ambiente: production`);
     
     // Criar e iniciar serviço principal
     const videoProcessingService = new VideoProcessingService(
       processVideoUseCase,
       createQueueUseCase,
-      queueUrl || queueName, // Usar URL direta se disponível, senão o nome
-      defaultConfig.queue.checkIntervalMs
+      queueUrl,
+      20000 // 20 segundos de intervalo hardcoded
     );
     
     await videoProcessingService.start();
