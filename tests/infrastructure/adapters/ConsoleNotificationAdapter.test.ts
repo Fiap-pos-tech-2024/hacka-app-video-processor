@@ -104,6 +104,247 @@ describe('ConsoleNotificationAdapter', () => {
       // Assert
       expect(consoleSpy.log).toHaveBeenCalled();
     });
+
+    it('should call private sendSuccessNotification and updateVideoStatus with valid data', async () => {
+      // Arrange
+      const mockFetch = jest.fn();
+      global.fetch = mockFetch;
+      
+      // Mock successful responses
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => 'Notification sent'
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => 'Status updated'
+        } as Response);
+
+      const result: ProcessingResult = {
+        success: true,
+        registerId: 'test-123',
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        savedZipKey: 'frames_123.zip',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+      };
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+      
+      // Verify notification call
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com/api/notify/success',
+        expect.objectContaining({
+          method: 'POST',
+          headers: {
+            'accept': '*/*',
+            'Authorization': 'Bearer token123',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            to: 'user@test.com',
+            message: 'Success!',
+            file: 'https://test-bucket.s3.us-east-1.amazonaws.com/frames_123.zip'
+          })
+        })
+      );
+
+      // Verify status update call
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com/video-upload-app/video/test-123',
+        expect.objectContaining({
+          method: 'PATCH',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer token123',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            status: 'FINISHED',
+            savedZipKey: 'frames_123.zip'
+          })
+        })
+      );
+
+      expect(logSpy).toHaveBeenCalledWith('✅ Notificação enviada com sucesso para API externa');
+      expect(logSpy).toHaveBeenCalledWith('✅ Status atualizado com sucesso na API do microserviço');
+
+      consoleSpy.mockRestore();
+      logSpy.mockRestore();
+    });
+
+    it('should skip external notification when zipUrl is missing', async () => {
+      // Arrange
+      const result: ProcessingResult = {
+        success: true,
+        registerId: 'test-123',
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+      };
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith('URL do ZIP não encontrada, pulando notificação externa');
+      consoleSpy.mockRestore();
+    });
+
+    it('should skip status update when registerId is missing', async () => {
+      // Arrange
+      const result: any = { // Using any to allow missing registerId
+        success: true,
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        savedZipKey: 'frames_123.zip',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+        // registerId is missing
+      };
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith('RegisterId não encontrado, pulando atualização de status');
+      consoleSpy.mockRestore();
+    });
+
+    it('should skip status update when savedZipKey is missing', async () => {
+      // Arrange
+      const result: ProcessingResult = {
+        success: true,
+        registerId: 'test-123',
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+        // savedZipKey is missing
+      };
+
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(consoleSpy).toHaveBeenCalledWith('SavedZipKey não encontrado, pulando atualização de status');
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle notification API errors', async () => {
+      // Arrange
+      const mockFetch = jest.fn();
+      global.fetch = mockFetch;
+      
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        text: async () => 'Bad Request'
+      } as Response);
+
+      const result: ProcessingResult = {
+        success: true,
+        registerId: 'test-123',
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        savedZipKey: 'frames_123.zip',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+      };
+
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Erro ao enviar notificação para API externa:',
+        expect.any(Error)
+      );
+      errorSpy.mockRestore();
+    });
+
+    it('should handle status update API errors', async () => {
+      // Arrange
+      const mockFetch = jest.fn();
+      global.fetch = mockFetch;
+      
+      // Mock successful notification but failed status update
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: async () => 'Notification sent'
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          text: async () => 'Internal Server Error'
+        } as Response);
+
+      const result: ProcessingResult = {
+        success: true,
+        registerId: 'test-123',
+        savedVideoKey: 'videos/test.mp4',
+        originalVideoName: 'original.mp4',
+        type: 'mp4',
+        savedZipKey: 'frames_123.zip',
+        user: {
+          id: 'user-123',
+          email: 'user@test.com',
+          authorization: 'Bearer token123'
+        }
+      };
+
+      const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Act
+      await adapter.notifySuccess(result);
+
+      // Assert
+      expect(errorSpy).toHaveBeenCalledWith(
+        'Erro ao atualizar status na API do microserviço:',
+        expect.any(Error)
+      );
+      errorSpy.mockRestore();
+    });
+
   });
 
   describe('notifyError', () => {
