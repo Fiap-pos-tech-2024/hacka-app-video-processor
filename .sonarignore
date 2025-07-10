@@ -1,0 +1,38 @@
+# Arquivos e diretórios ignorados pelo SonarCloud
+
+# Dependências
+node_modules/
+dist/
+build/
+
+# Coverage e relatórios
+coverage/
+*.lcov
+
+# Logs
+logs/
+*.log
+
+# Arquivos temporários e outputs
+tmp/
+outputs/
+video/
+upload/
+
+# Cache do LocalStack
+localstack/
+
+# Arquivos de mídia
+*.mp4
+*.avi
+*.mov
+*.zip
+
+# Configurações locais
+.env
+.env.local
+.env.production
+
+# Scripts de teste específicos com dados sensíveis
+**/testUpload.ts
+**/testStatusUpdate.ts
