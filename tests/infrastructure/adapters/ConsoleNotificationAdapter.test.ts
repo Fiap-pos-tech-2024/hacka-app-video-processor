@@ -15,10 +15,7 @@ describe('ConsoleNotificationAdapter', () => {
       error: jest.spyOn(console, 'error').mockImplementation(() => {})
     };
     
-    adapter = new ConsoleNotificationAdapter({
-      endpoint: 'http://localhost:4566',
-      bucket: 'test-bucket'
-    });
+    adapter = new ConsoleNotificationAdapter('test-bucket');
   });
 
   afterEach(() => {
