@@ -4,7 +4,7 @@ import { VideoProcessingService } from './application/services/VideoProcessingSe
 
 async function main(): Promise<void> {
   try {
-    console.log('[STARTUP] Iniciando aplicação de processamento de vídeos...');
+    console.log('[STARTUP] Iniciando aplicação de processamento de vídeos... oi pessoal');
     
     // Configurações hardcoded para produção
     const queueUrl = 'https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue';

@@ -44,6 +44,13 @@ async function createBucketIfNotExists() {
 async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, user: { id: string; email: string; authorization: string }) {
     console.log('🚀 Iniciando upload e notificação...');
     
+    // Mostrar URLs de configuração
+    console.log('🔗 URLs de configuração:');
+    console.log(`   📍 S3 Endpoint: ${s3Client.config.endpoint}`);
+    console.log(`   🪣 Bucket Name: ${BUCKET_NAME}`);
+    console.log(`   📬 SQS Queue URL: ${QUEUE_URL}`);
+    console.log(`   🌐 S3 Bucket URL: http://localhost:4566/${BUCKET_NAME}`);
+    
     // Verificar se o arquivo existe
     try {
         await fs.access(filePath);
@@ -60,6 +67,9 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
     const savedVideoKey = `${Date.now()}_${fileName}`;
 
     console.log(`📤 Enviando arquivo para S3: ${fileName} -> ${savedVideoKey}`);
+    console.log(`🔗 URL do objeto no S3: http://localhost:4566/${BUCKET_NAME}/${savedVideoKey}`);
+    console.log(`📋 Caminho completo do arquivo: ${filePath}`);
+    console.log(`📊 Tamanho do arquivo: ${fileBuffer.length} bytes`);
 
     // Upload para o S3
     await s3Client.send(new PutObjectCommand({
