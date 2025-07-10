@@ -4,7 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 // Configurações
-const BUCKET_NAME = 'poc-bucket';
+const BUCKET_NAME = 'fiap-video-bucket-20250706';
 const QUEUE_URL = 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/video_processed';
 
 const s3Client = new S3Client({
@@ -100,11 +100,11 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
 async function main() {
     const videoPath = path.join(process.cwd(), 'video', 'videoplayback.mp4');
     const type = 'test-video';
-    const registerId = `test-${Date.now()}`;
+    const registerId = '1'; // ID que será usado na URL da API do microserviço
     const user = {
         id: '54c844b8-d061-70fd-af1a-f30728e48525',
         email: 'erik.fernandes87@gmail.com',
-        authorization: 'Bearer eyJraWQiOiJyR05IZWRVS3JCR0NnR1haUTJuY3lNcnJvb3BVaDRDenNUSUVBNEorNnVVPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI1NGM4NDRiOC1kMDYxLTcwZmQtYWYxYS1mMzA3MjhlNDg1MjUiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV9nYkJxSWM0VWgiLCJjbGllbnRfaWQiOiI2NzdpczRqMmU5cGd2amJzZDRzZDlya244YyIsIm9yaWdpbl9qdGkiOiJkOTliYjRkMi05NzczLTRjZjEtOGFhNS04NDlhZTYxMjQxOGQiLCJldmVudF9pZCI6ImIxNTM5M2UyLWUwZGUtNDUxZi04ZTA5LWYxMGU1MDQ0MDc5ZiIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3NTIwOTk4NTMsImV4cCI6MTc1MjEwMzQ1MywiaWF0IjoxNzUyMDk5ODUzLCJqdGkiOiJjNGRmY2FjNC1iZmY5LTQ5ZTAtYTRjMC1kNzc4YWI2OGI4YmUiLCJ1c2VybmFtZSI6IjU0Yzg0NGI4LWQwNjEtNzBmZC1hZjFhLWYzMDcyOGU0ODUyNSJ9.U7688us_Rhnb-XxuSMDl80h6GOd98ukXb2bTYgX8Tv2A7Grtyb0RFtIGXk00SjIdrXr_E_Ou0-NQnbBur3HpBXXvdbAdObbwGH4XTiX3QjtD5OJUJUO67TGa2VZIVm0Spo6LnXpnNP_kfAccd3aXOJXPhoy1U2s_ypFOVwrqzq-LdENRj4DGM4Q8WdjewZNDwCApw6FDz0HkUqjILrJ2f37Y_ugNpc5_P9Z6ZWH1FqRf6y_zIwoBuLaEaFTgLYmoCwJPixwEAuE_69P1Nfz9aJA5Pjj87mcUx_zD71S3EMVwNrrGcSjQOV_NXWC5LWGZh2O5fccxwK8xziTOe_z2fA'
+        authorization: 'Bearer eyJraWQiOiJyR05IZWRVS3JCR0NnR1haUTJuY3lNcnJvb3BVaDRDenNUSUVBNEorNnVVPSIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiI1NGM4NDRiOC1kMDYxLTcwZmQtYWYxYS1mMzA3MjhlNDg1MjUiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV9nYkJxSWM0VWgiLCJjbGllbnRfaWQiOiI2NzdpczRqMmU5cGd2amJzZDRzZDlya244YyIsIm9yaWdpbl9qdGkiOiIxYTZkMmQ4NS04NmMxLTRiM2EtYWI5Ny1mMjM1NGYzYzQwYzciLCJldmVudF9pZCI6ImYwOGM1ZWQ0LWVkY2YtNDg3MC1hMDdkLTUxNDE4ODY1ODA0YyIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE3NTIxMDQxNTgsImV4cCI6MTc1MjEwNzc1OCwiaWF0IjoxNzUyMTA0MTU4LCJqdGkiOiI4ZmZkYzhjYy1iZGJiLTQ3MGUtOGRmZC1iZmFmYmUyZTQzMGMiLCJ1c2VybmFtZSI6IjU0Yzg0NGI4LWQwNjEtNzBmZC1hZjFhLWYzMDcyOGU0ODUyNSJ9.BvKQWxFIxh4IMP9AkAJ1nSJLhxUdwWxRch-Y8Ay2hf8DwJKs_zll16vzXFqtvadSp10eeE7BeEM265N6DqbbW2d8MFqMD-mDSUZwDwc_Cj2W_X4rnoBkaOJHf8_j5q230qytQ8oRKu9DLvmHKk834tF4jdf1-iSaEv2WC12g1po2_YAPQUPoU_kLbZEJERfUzDMIvGbeAdrk6KhQJsexx_wWb7PhFmHmJqprkKdx18oJBc_kUWLTzteYXfTsjILSFD2fzP8Z9BENfMBXVOax-4eFKlJ9sKbui_UW8vrLprd_ul0xGrWN9_z5JazmKSr_8jvjAqM1V6SqMVwq1Y0J_w'
     };
 
     try {

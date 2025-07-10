@@ -18,18 +18,16 @@ services:
 
   app:
     build: .
-    depends_on:
-      localstack:
-        condition: service_healthy
     volumes:
       - ./video:/app/video
       - ./outputs:/app/outputs
       - ./tmp:/app/tmp
+      # Montar credenciais AWS do host
+      - ~/.aws:/root/.aws:ro
     environment:
-      - NODE_ENV=development
-      - AWS_ENDPOINT=http://localstack:4566
+      - NODE_ENV=production
       - AWS_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
       - S3_BUCKET=fiap-video-bucket-20250706
+      - SQS_QUEUE_URL=https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue
+      - SQS_QUEUE_NAME=video-processing-queue
 

@@ -16,7 +16,23 @@ export class AWSSQSAdapter implements QueuePort {
     try {
       const data = await this.sqsClient.send(new CreateQueueCommand(params));
       return data.QueueUrl;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.Code === 'QueueNameExists' || error.Code === 'QueueAlreadyExists') {
+        console.log(`[INFO] Fila já existe: ${queueName}`);
+        
+        // Usar GetQueueUrl para obter a URL correta
+        if (process.env.NODE_ENV === 'production') {
+          // Em produção, usar a URL conhecida da fila
+          const region = process.env.AWS_REGION || 'us-east-1';
+          const accountId = '816069165502'; // Account ID extraído da URL fornecida
+          const queueUrl = `https://sqs.${region}.amazonaws.com/${accountId}/${queueName}`;
+          return queueUrl;
+        } else {
+          // Para LocalStack
+          const queueUrl = `http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/${queueName}`;
+          return queueUrl;
+        }
+      }
       console.error('Erro ao criar fila:', error);
       throw error;
     }
