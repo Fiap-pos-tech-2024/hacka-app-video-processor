@@ -61,7 +61,7 @@ npm run build
 ### Execução
 
 ```bash
-# Executar em produção
+# Executar em produção (inicia servidor HTTP na porta 3000)
 npm start
 
 # Executar em desenvolvimento (com watch)
@@ -70,6 +70,11 @@ npm run dev
 # Testar upload de vídeo (configurar variáveis de ambiente antes)
 npm run test-upload
 ```
+
+**Nota**: A aplicação iniciará um servidor HTTP na porta 3000 (ou na porta definida pela variável de ambiente `PORT`) com as seguintes rotas:
+- `GET /health` - Health check completo
+- `GET /ping` - Verificação simples
+- `GET /info` - Informações da aplicação
 
 ### 🔧 Configuração do Script de Teste
 
@@ -170,6 +175,84 @@ base-hexa/
 | **Iniciar** | `npm start` | Inicia o serviço de processamento de vídeos |
 | **Desenvolvimento** | `npm run dev` | Modo desenvolvimento com hot-reload |
 | **Teste Upload** | `npm run test-upload` | Faz upload de um vídeo de teste e envia para processamento |
+## 🏥 Health Check e Monitoramento
+
+O sistema agora inclui rotas HTTP para monitoramento e health check:
+
+### 📊 Rota de Health Check
+```bash
+GET http://localhost:3000/health
+```
+
+**Resposta de exemplo:**
+```json
+{
+  "status": "healthy", // ou "unhealthy"
+  "timestamp": "2025-07-10T17:56:42.340Z",
+  "services": {
+    "sqs": {
+      "status": "up", // "up", "down" ou "unknown"
+      "lastCheck": "2025-07-10T17:56:42.977Z"
+    },
+    "s3": {
+      "status": "up",
+      "lastCheck": "2025-07-10T17:56:42.340Z"
+    },
+    "ffmpeg": {
+      "status": "up", 
+      "lastCheck": "2025-07-10T17:56:42.343Z"
+    }
+  },
+  "uptime": 11, // tempo em segundos desde o início
+  "application": {
+    "name": "Video Processing Service",
+    "version": "1.0.0",
+    "environment": "development"
+  }
+}
+```
+
+**Status Codes:**
+- `200` - Sistema saudável
+- `503` - Sistema não saudável (um ou mais serviços com problemas)
+- `500` - Erro interno durante verificação
+
+### 🏓 Outras Rotas Disponíveis
+
+#### Ping
+```bash
+GET http://localhost:3000/ping
+```
+Resposta simples para verificar se o servidor está respondendo.
+
+#### Informações da Aplicação
+```bash
+GET http://localhost:3000/info
+```
+Retorna informações básicas sobre a aplicação.
+
+### 🚀 Iniciando com Health Check
+
+Quando você iniciar a aplicação:
+
+```bash
+npm start
+```
+
+Você verá:
+```
+🎬 Iniciando aplicação de processamento de vídeos...
+📋 Configurações de Produção:
+   - Região AWS: us-east-1
+   - Bucket S3: fiap-video-bucket-20250706
+   - Fila SQS: https://sqs.us-east-1.amazonaws.com/816069165502/video-processing-queue
+   - Porta HTTP: 3000
+   - Ambiente: production
+🌐 Servidor HTTP iniciado na porta 3000
+📊 Health check disponível em: http://localhost:3000/health
+📋 Info da aplicação em: http://localhost:3000/info
+```
+
 ## 🔧 Como Funciona
 
 1. **Monitoramento**: O serviço monitora continuamente a fila SQS `video_processed`

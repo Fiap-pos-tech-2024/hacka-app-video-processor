@@ -6,8 +6,11 @@ import { AWSS3Adapter } from '../adapters/AWSS3Adapter.js';
 import { NodeFileSystemAdapter } from '../adapters/NodeFileSystemAdapter.js';
 import { FFmpegVideoProcessor } from '../adapters/FFmpegVideoProcessor.js';
 import { ConsoleNotificationAdapter } from '../adapters/ConsoleNotificationAdapter.js';
+import { ExpressServerAdapter } from '../adapters/ExpressServerAdapter.js';
 import { ProcessVideoUseCase } from '../../domain/useCases/ProcessVideoUseCase.js';
 import { CreateQueueUseCase } from '../../domain/useCases/CreateQueueUseCase.js';
+import { HealthCheckUseCase } from '../../domain/useCases/HealthCheckUseCase.js';
+import { HealthCheckUseCaseImpl } from '../../domain/useCases/HealthCheckUseCaseImpl.js';
 
 export class DependencyFactory {
   private config: AppConfig;
@@ -67,5 +70,17 @@ export class DependencyFactory {
 
   createCreateQueueUseCase(): CreateQueueUseCase {
     return new CreateQueueUseCase(this.createQueueAdapter());
+  }
+
+  createHealthCheckUseCase(): HealthCheckUseCase {
+    return new HealthCheckUseCaseImpl(
+      this.createQueueAdapter(),
+      this.createStorageAdapter(),
+      this.createVideoProcessorAdapter()
+    );
+  }
+
+  createHttpServer(): ExpressServerAdapter {
+    return new ExpressServerAdapter(this.createHealthCheckUseCase());
   }
 }
