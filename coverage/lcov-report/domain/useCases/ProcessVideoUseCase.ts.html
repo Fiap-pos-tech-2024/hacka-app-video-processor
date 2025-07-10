@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>63/63</span>
+                <span class='fraction'>64/64</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>63/63</span>
+                <span class='fraction'>64/64</span>
             </div>
         
             
@@ -192,7 +192,8 @@
 <a name='L127'></a><a href='#L127'>127</a>
 <a name='L128'></a><a href='#L128'>128</a>
 <a name='L129'></a><a href='#L129'>129</a>
-<a name='L130'></a><a href='#L130'>130</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L130'></a><a href='#L130'>130</a>
+<a name='L131'></a><a href='#L131'>131</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -204,11 +205,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,6 +271,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
@@ -309,7 +312,6 @@
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -337,7 +339,8 @@ export class ProcessVideoUseCase {
     private readonly storagePort: StoragePort,
     private readonly fileSystemPort: FileSystemPort,
     private readonly videoProcessorPort: VideoProcessorPort,
-    private readonly notificationPort: NotificationPort
+    private readonly notificationPort: NotificationPort,
+    private readonly bucketName: string
   ) {}
 &nbsp;
   async execute(queueUrl: string): Promise&lt;void&gt; {
@@ -395,12 +398,13 @@ export class ProcessVideoUseCase {
       registerId: videoProcessing.registerId,
       savedVideoKey: videoProcessing.savedVideoKey,
       originalVideoName: videoProcessing.originalVideoName,
-      type: videoProcessing.type
+      type: videoProcessing.type,
+      user: videoProcessing.user
     };
 &nbsp;
     try {
       // Download do arquivo do S3
-      const fileBuffer = await this.storagePort.downloadFile('poc-bucket', videoProcessing.savedVideoKey);
+      const fileBuffer = await this.storagePort.downloadFile(this.bucketName, videoProcessing.savedVideoKey);
       if (!fileBuffer) {
         throw new Error('Arquivo não encontrado no S3');
       }
@@ -426,21 +430,20 @@ export class ProcessVideoUseCase {
       
       if (frames.length === 0) {
         throw new Error('Nenhum frame extraído');
-      }
-&nbsp;
-      // Criar ZIP
+      }      
+      
+      // Criar ZIP e fazer upload para S3
       const zipName = `frames_${id}.zip`;
       const zipPath = path.join(outputDir, zipName);
-      await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath);
+      const savedZipKey = await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath, this.bucketName);
 &nbsp;
       // Limpeza
       await this.fileSystemPort.remove(tempFramesDir);
-      await this.fileSystemPort.remove(filePath);
-&nbsp;
-      console.log('Zip gerado em:', zipPath);
+      await this.fileSystemPort.remove(filePath);      
       
       result.success = true;
       result.outputPath = zipPath;
+      result.savedZipKey = savedZipKey;
       
       return result;
     } catch (error) {
@@ -457,7 +460,7 @@ export class ProcessVideoUseCase {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-22T00:28:46.115Z
+                at 2025-07-10T18:29:07.479Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>20/20</span>
+                <span class='fraction'>22/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>3/5</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">91.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>20/20</span>
+                <span class='fraction'>22/24</span>
             </div>
         
             
@@ -106,7 +106,17 @@
 <a name='L41'></a><a href='#L41'>41</a>
 <a name='L42'></a><a href='#L42'>42</a>
 <a name='L43'></a><a href='#L43'>43</a>
-<a name='L44'></a><a href='#L44'>44</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -117,14 +127,24 @@
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">5x</span>
@@ -156,40 +176,50 @@ export class VideoProcessingService {
   constructor(
     private readonly processVideoUseCase: ProcessVideoUseCase,
     private readonly createQueueUseCase: CreateQueueUseCase,
-    private readonly queueName: string,
+    private readonly queueIdentifier: string, // Pode ser nome da fila ou URL
     private readonly checkIntervalMs: number
   ) {}
+  
   async start(): Promise&lt;void&gt; {
-    console.log('🚀 Iniciando serviço de processamento de vídeos...');
+    console.log('[STARTUP] Iniciando serviço de processamento de vídeos...');
     
-    // Criar/verificar fila
-    const queueUrl = await this.createQueueUseCase.execute(this.queueName);
+    let queueUrl: string | undefined;
     
-    if (!queueUrl) {
-      console.error('❌ Não foi possível criar/acessar a fila. Encerrando aplicação.');
-      return;
+    // Verificar se já é uma URL de fila SQS
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (this.queueIdentifier.includes('sqs') &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >this.queueIdentifier.includes('amazonaws.com'))</span> {
+<span class="cstat-no" title="statement not covered" >      console.log('[INFO] Usando URL da fila SQS fornecida:', this.queueIdentifier);</span>
+<span class="cstat-no" title="statement not covered" >      queueUrl = this.queueIdentifier;</span>
+    } else {
+      // Criar/verificar fila pelo nome
+      console.log('[INFO] Criando/verificando fila:', this.queueIdentifier);
+      queueUrl = await this.createQueueUseCase.execute(this.queueIdentifier);
+      
+      if (!queueUrl) {
+        console.error('[ERROR] Não foi possível criar/acessar a fila. Encerrando aplicação.');
+        return;
+      }
     }
 &nbsp;
-    console.log('✅ Fila configurada:', queueUrl);
-    console.log(`🔄 Verificando mensagens a cada ${this.checkIntervalMs}ms`);
+    console.log('[SUCCESS] Fila configurada:', queueUrl);
+    console.log(`[INFO] Verificando mensagens a cada ${this.checkIntervalMs}ms`);
 &nbsp;
     // Processar mensagens imediatamente
     try {
       await this.processVideoUseCase.execute(queueUrl);
     } catch (error) {
-      console.error('❌ Erro no processamento inicial:', error);
+      console.error('[ERROR] Erro no processamento inicial:', error);
     }
 &nbsp;
     // Configurar intervalo de processamento
     setInterval(async () =&gt; {
       try {
-        await this.processVideoUseCase.execute(queueUrl);
+        await this.processVideoUseCase.execute(queueUrl!);
       } catch (error) {
-        console.error('❌ Erro no processamento em intervalo:', error);
+        console.error('[ERROR] Erro no processamento em intervalo:', error);
       }
     }, this.checkIntervalMs);
 &nbsp;
-    console.log('✅ Serviço iniciado com sucesso!');
+    console.log('[SUCCESS] Serviço iniciado com sucesso!');
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -199,7 +229,7 @@ export class VideoProcessingService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-22T00:28:46.144Z
+                at 2025-07-10T18:29:07.525Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

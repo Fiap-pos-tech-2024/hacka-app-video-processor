@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">12.12% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>4/24</span>
+                <span class='fraction'>4/33</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>0/12</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">12.12% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>4/24</span>
+                <span class='fraction'>4/33</span>
             </div>
         
             
@@ -131,12 +131,28 @@
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
 <a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">13x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -149,6 +165,22 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -217,7 +249,23 @@ export class AWSSQSAdapter implements QueuePort {
 <span class="cstat-no" title="statement not covered" >    try {</span>
       const data = <span class="cstat-no" title="statement not covered" >await this.sqsClient.send(new CreateQueueCommand(params));</span>
 <span class="cstat-no" title="statement not covered" >      return data.QueueUrl;</span>
-    } catch (error) {
+    } catch (error: any) {
+<span class="cstat-no" title="statement not covered" >      <span class="missing-if-branch" title="if path not taken" >I</span>if (error.Code === 'QueueNameExists' || error.Code === 'QueueAlreadyExists') {</span>
+<span class="cstat-no" title="statement not covered" >        console.log(`[INFO] Fila já existe: ${queueName}`);</span>
+        
+        // Usar GetQueueUrl para obter a URL correta
+<span class="cstat-no" title="statement not covered" >        if (process.env.NODE_ENV === 'production') {</span>
+          // Em produção, usar a URL conhecida da fila
+          const region = <span class="cstat-no" title="statement not covered" >process.env.AWS_REGION || 'us-east-1';</span>
+          const accountId = <span class="cstat-no" title="statement not covered" >'816069165502';</span> // Account ID extraído da URL fornecida
+          const queueUrl = <span class="cstat-no" title="statement not covered" >`https://sqs.${region}.amazonaws.com/${accountId}/${queueName}`;</span>
+<span class="cstat-no" title="statement not covered" >          return queueUrl;</span>
+        } else {
+          // Para LocalStack
+          const queueUrl = <span class="cstat-no" title="statement not covered" >`http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/${queueName}`;</span>
+<span class="cstat-no" title="statement not covered" >          return queueUrl;</span>
+        }
+      }
 <span class="cstat-no" title="statement not covered" >      console.error('Erro ao criar fila:', error);</span>
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
@@ -274,7 +322,7 @@ export class AWSSQSAdapter implements QueuePort {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-22T00:28:46.115Z
+                at 2025-07-10T18:29:07.479Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
