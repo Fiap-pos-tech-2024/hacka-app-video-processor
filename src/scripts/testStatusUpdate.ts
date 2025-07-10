@@ -19,9 +19,14 @@ async function testStatusUpdate() {
   const USER_ID = process.env.TEST_USER_ID || 'test-user-id';
   const USER_EMAIL = process.env.TEST_USER_EMAIL || 'test@example.com';
   const USER_TOKEN = process.env.TEST_USER_TOKEN || 'Bearer <TOKEN>';
+  const BASE_PATH_EXTERNAL_API = process.env.BASE_PATH_EXTERNAL_API || '<MISSING_BASE_PATH_EXTERNAL_API>';
 
   if (USER_TOKEN.includes('<TOKEN>')) {
     console.warn('⚠️ AVISO: Token não foi configurado no .env. Substitua TEST_USER_TOKEN por um valor real para testes.');
+  }
+
+  if (BASE_PATH_EXTERNAL_API.includes('<MISSING_BASE_PATH_EXTERNAL_API>')) {
+    console.warn('⚠️ AVISO: BASE_PATH_EXTERNAL_API não configurado. Verifique suas variáveis de ambiente.');
   }
 
   // Adapter
@@ -43,10 +48,11 @@ async function testStatusUpdate() {
   };
 
   try {
+    const updateUrl = `${BASE_PATH_EXTERNAL_API}/api/video/${testResult.registerId}`;
     console.log('📊 Dados do teste:');
     console.log('- RegisterId:', testResult.registerId);
     console.log('- SavedZipKey:', testResult.savedZipKey);
-    console.log('- URL de atualização será:', `http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com/video-upload-app/video/${testResult.registerId}`);
+    console.log('- URL de atualização será:', updateUrl);
     console.log('- Payload:', {
       status: "FINISHED",
       savedZipKey: testResult.savedZipKey
