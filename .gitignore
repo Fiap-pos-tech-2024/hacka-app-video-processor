@@ -21,6 +21,7 @@ Thumbs.db
 
 # SonarCloud
 coverage/
++outputs/
 .scannerwork/
 
 # Outros
