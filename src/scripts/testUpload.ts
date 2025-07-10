@@ -44,12 +44,29 @@ async function createBucketIfNotExists() {
 async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, user: { id: string; email: string; authorization: string }) {
     console.log('Iniciando upload e notificação...');
     
+    // Validar dados de entrada
+    if (!user.id || !user.email || !user.authorization) {
+        throw new Error('Dados de usuário incompletos. ID, email e autorização são obrigatórios.');
+    }
+    
+    if (!registerId || !type) {
+        throw new Error('ID de registro e tipo são obrigatórios.');
+    }
+    
     // Mostrar URLs de configuração
     console.log('URLs de configuração:');
     console.log(`S3 Endpoint: ${s3Client.config.endpoint}`);
     console.log(`Bucket Name: ${BUCKET_NAME}`);
     console.log(`SQS Queue URL: ${QUEUE_URL}`);
     console.log(`S3 Bucket URL: http://localhost:4566/${BUCKET_NAME}`);
+    
+    // Mostrar dados do usuário (sem o token completo por segurança)
+    console.log('Dados do usuário:');
+    console.log(`User ID: ${user.id}`);
+    console.log(`Email: ${user.email}`);
+    console.log(`Token presente: ${user.authorization ? 'Sim' : 'Não'}`);
+    console.log(`Register ID: ${registerId}`);
+    console.log(`Tipo: ${type}`);
     
     // Verificar se o arquivo existe
     try {
@@ -81,7 +98,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
     console.log('Arquivo enviado ao S3:', savedVideoKey);
 
     // Monta mensagem para a fila
-    const messageBody = JSON.stringify({
+    const messageData = {
         registerId,
         savedVideoKey,
         originalVideoName: fileName,
@@ -91,10 +108,22 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
             email: user.email,
             authorization: user.authorization,
         },
-    });
+    };
+
+    const messageBody = JSON.stringify(messageData);
 
     console.log('Enviando mensagem para a fila...');
-    console.log('Dados da mensagem:', JSON.parse(messageBody));
+    console.log('Dados da mensagem:', {
+        registerId: messageData.registerId,
+        savedVideoKey: messageData.savedVideoKey,
+        originalVideoName: messageData.originalVideoName,
+        type: messageData.type,
+        user: {
+            id: messageData.user.id,
+            email: messageData.user.email,
+            authorization: messageData.user.authorization ? '[TOKEN_PRESENTE]' : undefined
+        }
+    });
 
     // Envia mensagem para a fila
     await sqsClient.send(new SendMessageCommand({
@@ -103,7 +132,11 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
     }));
     
     console.log('Mensagem enviada para a fila com sucesso!');
-    console.log('Upload concluído! O vídeo será processado em breve.');
+    console.log('✅ Upload concluído! O vídeo será processado em breve.');
+    console.log(`📁 Arquivo S3: ${savedVideoKey}`);
+    console.log(`🆔 Register ID: ${registerId}`);
+    console.log(`👤 Usuário: ${user.email} (ID: ${user.id})`);
+    console.log(`📋 Tipo: ${type}`);
 }
 
 // Exemplo de uso
