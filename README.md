@@ -67,9 +67,30 @@ npm start
 # Executar em desenvolvimento (com watch)
 npm run dev
 
-# Testar upload de vídeo
+# Testar upload de vídeo (configurar variáveis de ambiente antes)
 npm run test-upload
 ```
+
+### 🔧 Configuração do Script de Teste
+
+Para testar o upload de vídeo, configure as seguintes variáveis de ambiente:
+
+```bash
+# Windows PowerShell
+$env:TEST_USER_ID="seu-user-id"
+$env:TEST_USER_EMAIL="seu-email@exemplo.com"
+$env:TEST_USER_TOKEN="Bearer seu-jwt-token"
+
+# Linux/Mac
+export TEST_USER_ID="seu-user-id"
+export TEST_USER_EMAIL="seu-email@exemplo.com"
+export TEST_USER_TOKEN="Bearer seu-jwt-token"
+
+# Em seguida execute o teste
+npm run test-upload
+```
+
+**Nota de Segurança**: ⚠️ Nunca commite tokens JWT reais no código. Use sempre variáveis de ambiente para dados sensíveis.
 
 ## 📁 Estrutura do Projeto
 
