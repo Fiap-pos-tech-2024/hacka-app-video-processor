@@ -45,9 +45,10 @@ describe('ConsoleNotificationAdapter', () => {
         {
           registerId: 'test-123',
           savedVideoKey: 'videos/test.mp4',
-          videoUrl: 'http://localhost:4566/test-bucket/videos/test.mp4',
+          videoUrl: 'https://test-bucket.s3.us-east-1.amazonaws.com/videos/test.mp4',
           originalVideoName: 'original.mp4',
           type: 'mp4',
+          user: undefined,
           outputPath: '/path/to/output.zip',
           savedZipKey: undefined,
           zipUrl: undefined
@@ -75,14 +76,16 @@ describe('ConsoleNotificationAdapter', () => {
         {
           registerId: 'test-456',
           savedVideoKey: 'videos/test2.mp4',
-          videoUrl: 'http://localhost:4566/test-bucket/videos/test2.mp4',
+          videoUrl: 'https://test-bucket.s3.us-east-1.amazonaws.com/videos/test2.mp4',
           originalVideoName: 'original2.mp4',
           type: 'mp4',
+          user: undefined,
           outputPath: undefined,
           savedZipKey: undefined,
           zipUrl: undefined
         }
       );
+      expect(consoleSpy.log).toHaveBeenCalledTimes(1);
     });
 
     it('should handle minimal result data', async () => {

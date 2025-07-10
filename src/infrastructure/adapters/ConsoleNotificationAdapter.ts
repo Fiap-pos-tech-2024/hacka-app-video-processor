@@ -40,7 +40,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     try {
       await this.sendSuccessNotification(result, zipUrl);
     } catch (error) {
-      console.error('❌ Erro ao enviar notificação para API externa:', error);
+      console.error('Erro ao enviar notificação para API externa:', error);
       // Não falha o processamento por causa da notificação
     }
 
@@ -48,7 +48,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     try {
       await this.updateVideoStatus(result, result.savedZipKey);
     } catch (error) {
-      console.error('❌ Erro ao atualizar status na API do microserviço:', error);
+      console.error('Erro ao atualizar status na API do microserviço:', error);
       // Não falha o processamento por causa da atualização de status
     }
   }
@@ -66,12 +66,12 @@ export class ConsoleNotificationAdapter implements NotificationPort {
 
   private async sendSuccessNotification(result: ProcessingResult, zipUrl?: string): Promise<void> {
     if (!result.user?.email || !result.user?.authorization) {
-      console.warn('⚠️ Email ou autorização do usuário não encontrados, pulando notificação externa');
+      console.warn('Email ou autorização do usuário não encontrados, pulando notificação externa');
       return;
     }
 
     if (!zipUrl) {
-      console.warn('⚠️ URL do ZIP não encontrada, pulando notificação externa');
+      console.warn('URL do ZIP não encontrada, pulando notificação externa');
       return;
     }
 
@@ -81,8 +81,8 @@ export class ConsoleNotificationAdapter implements NotificationPort {
       file: zipUrl
     };
 
-    console.log('📤 Enviando notificação para API externa:', this.notificationUrl);
-    console.log('📋 Payload:', payload);
+    console.log('Enviando notificação para API externa:', this.notificationUrl);
+    console.log('Payload:', payload);
 
     const response = await fetch(this.notificationUrl, {
       method: 'POST',
@@ -104,17 +104,17 @@ export class ConsoleNotificationAdapter implements NotificationPort {
 
   private async updateVideoStatus(result: ProcessingResult, savedZipKey?: string): Promise<void> {
     if (!result.user?.authorization) {
-      console.warn('⚠️ Autorização do usuário não encontrada, pulando atualização de status');
+      console.warn('Autorização do usuário não encontrada, pulando atualização de status');
       return;
     }
 
     if (!result.registerId) {
-      console.warn('⚠️ RegisterId não encontrado, pulando atualização de status');
+      console.warn('RegisterId não encontrado, pulando atualização de status');
       return;
     }
 
     if (!savedZipKey) {
-      console.warn('⚠️ SavedZipKey não encontrado, pulando atualização de status');
+      console.warn('SavedZipKey não encontrado, pulando atualização de status');
       return;
     }
 
@@ -125,8 +125,8 @@ export class ConsoleNotificationAdapter implements NotificationPort {
 
     const updateUrl = `${this.statusUpdateUrl}/${result.registerId}`;
 
-    console.log('📤 Atualizando status na API do microserviço:', updateUrl);
-    console.log('📋 Payload:', payload);
+    console.log('Atualizando status na API do microserviço:', updateUrl);
+    console.log('Payload:', payload);
 
     const response = await fetch(updateUrl, {
       method: 'PATCH',
