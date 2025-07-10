@@ -31,31 +31,31 @@ async function createBucketIfNotExists() {
         await s3Client.send(new CreateBucketCommand({
             Bucket: BUCKET_NAME,
         }));
-        console.log(`✅ Bucket "${BUCKET_NAME}" criado/verificado com sucesso`);
+        console.log(`Bucket "${BUCKET_NAME}" criado/verificado com sucesso`);
     } catch (error: any) {
         if (error.Code !== 'BucketAlreadyOwnedByYou' && error.Code !== 'BucketAlreadyExists') {
-            console.error('❌ Erro ao criar bucket:', error);
+            console.error('Erro ao criar bucket:', error);
             throw error;
         }
-        console.log(`✅ Bucket "${BUCKET_NAME}" já existe`);
+        console.log(`Bucket "${BUCKET_NAME}" já existe`);
     }
 }
 
 async function uploadVideoAndNotify(filePath: string, type: string, registerId: string, user: { id: string; email: string; authorization: string }) {
-    console.log('🚀 Iniciando upload e notificação...');
+    console.log('Iniciando upload e notificação...');
     
     // Mostrar URLs de configuração
-    console.log('🔗 URLs de configuração:');
-    console.log(`   📍 S3 Endpoint: ${s3Client.config.endpoint}`);
-    console.log(`   🪣 Bucket Name: ${BUCKET_NAME}`);
-    console.log(`   📬 SQS Queue URL: ${QUEUE_URL}`);
-    console.log(`   🌐 S3 Bucket URL: http://localhost:4566/${BUCKET_NAME}`);
+    console.log('URLs de configuração:');
+    console.log(`S3 Endpoint: ${s3Client.config.endpoint}`);
+    console.log(`Bucket Name: ${BUCKET_NAME}`);
+    console.log(`SQS Queue URL: ${QUEUE_URL}`);
+    console.log(`S3 Bucket URL: http://localhost:4566/${BUCKET_NAME}`);
     
     // Verificar se o arquivo existe
     try {
         await fs.access(filePath);
     } catch (error) {
-        console.error(`❌ Arquivo não encontrado: ${filePath}`);
+        console.error(`Arquivo não encontrado: ${filePath}`);
         return;
     }
 
@@ -66,10 +66,10 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
     const fileBuffer = await fs.readFile(filePath);
     const savedVideoKey = `${Date.now()}_${fileName}`;
 
-    console.log(`📤 Enviando arquivo para S3: ${fileName} -> ${savedVideoKey}`);
-    console.log(`🔗 URL do objeto no S3: http://localhost:4566/${BUCKET_NAME}/${savedVideoKey}`);
-    console.log(`📋 Caminho completo do arquivo: ${filePath}`);
-    console.log(`📊 Tamanho do arquivo: ${fileBuffer.length} bytes`);
+    console.log(`Enviando arquivo para S3: ${fileName} -> ${savedVideoKey}`);
+    console.log(`URL do objeto no S3: http://localhost:4566/${BUCKET_NAME}/${savedVideoKey}`);
+    console.log(`Caminho completo do arquivo: ${filePath}`);
+    console.log(`Tamanho do arquivo: ${fileBuffer.length} bytes`);
 
     // Upload para o S3
     await s3Client.send(new PutObjectCommand({
@@ -78,7 +78,7 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         Body: fileBuffer,
     }));
     
-    console.log('✅ Arquivo enviado ao S3:', savedVideoKey);
+    console.log('Arquivo enviado ao S3:', savedVideoKey);
 
     // Monta mensagem para a fila
     const messageBody = JSON.stringify({
@@ -93,8 +93,8 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         },
     });
 
-    console.log('📨 Enviando mensagem para a fila...');
-    console.log('�📋 Dados da mensagem:', JSON.parse(messageBody));
+    console.log('Enviando mensagem para a fila...');
+    console.log('Dados da mensagem:', JSON.parse(messageBody));
 
     // Envia mensagem para a fila
     await sqsClient.send(new SendMessageCommand({
@@ -102,8 +102,8 @@ async function uploadVideoAndNotify(filePath: string, type: string, registerId: 
         MessageBody: messageBody,
     }));
     
-    console.log('✅ Mensagem enviada para a fila com sucesso!');
-    console.log('🎬 Upload concluído! O vídeo será processado em breve.');
+    console.log('Mensagem enviada para a fila com sucesso!');
+    console.log('Upload concluído! O vídeo será processado em breve.');
 }
 
 // Exemplo de uso
@@ -120,7 +120,7 @@ async function main() {
     try {
         await uploadVideoAndNotify(videoPath, type, registerId, user);
     } catch (error) {
-        console.error('❌ Erro no upload:', error);
+        console.error('Erro no upload:', error);
         process.exit(1);
     }
 }
