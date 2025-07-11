@@ -9,16 +9,18 @@ describe('ConsoleNotificationAdapter', () => {
   };
 
   beforeEach(() => {
+    process.env.BASE_PATH_EXTERNAL_API = 'http://localhost:3001';
+
     consoleSpy = {
-      log: jest.spyOn(console, 'log').mockImplementation(() => { }),
-      error: jest.spyOn(console, 'error').mockImplementation(() => { }),
+      log: jest.spyOn(console, 'log').mockImplementation(() => {}),
+      error: jest.spyOn(console, 'error').mockImplementation(() => {}),
     };
   });
 
   afterEach(() => {
     consoleSpy.log.mockRestore();
     consoleSpy.error.mockRestore();
-    delete (global as any).fetch;
+    delete process.env.BASE_PATH_EXTERNAL_API;
   });
 
   it('should log success message with correct format', async () => {
@@ -49,11 +51,13 @@ describe('ConsoleNotificationAdapter', () => {
 
   it('should call external APIs if user and zip data are present', async () => {
     const mockFetch = jest.fn();
-    adapter = new ConsoleNotificationAdapter('test-bucket', mockFetch, 'https://video-upload-app');
 
+    // ✅ Mocka os retornos com .ok e .text()
     mockFetch
-      .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('ok') }) // notificação
-      .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve('ok') }); // atualização
+      .mockResolvedValueOnce({ ok: true, text: async () => 'ok' }) // notificação
+      .mockResolvedValueOnce({ ok: true, text: async () => 'ok' }); // status update
+
+    adapter = new ConsoleNotificationAdapter('test-bucket', mockFetch);
 
     const result: ProcessingResult = {
       success: true,
@@ -72,7 +76,7 @@ describe('ConsoleNotificationAdapter', () => {
     await adapter.notifySuccess(result);
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/notify/success'),
+      'http://localhost:3001/api/notify/success',
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({
@@ -87,7 +91,7 @@ describe('ConsoleNotificationAdapter', () => {
     );
 
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/video/abc123'),
+      'http://localhost:3001/api/video/abc123',
       expect.objectContaining({
         method: 'PATCH',
         headers: expect.objectContaining({
@@ -100,8 +104,6 @@ describe('ConsoleNotificationAdapter', () => {
       })
     );
   });
-
-
 
   it('should log error message', async () => {
     adapter = new ConsoleNotificationAdapter('test-bucket');

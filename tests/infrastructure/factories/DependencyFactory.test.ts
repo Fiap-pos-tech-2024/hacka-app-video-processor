@@ -13,8 +13,18 @@ jest.mock('@aws-sdk/client-s3', () => ({
 describe('DependencyFactory', () => {
   let factory: DependencyFactory;
   let mockConfig: AppConfig;
+  let fetchSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    // ✅ Set required env var for ConsoleNotificationAdapter
+    process.env.BASE_PATH_EXTERNAL_API = 'http://localhost:3001';
+
+    // ✅ Global fetch mock (necessário para ConsoleNotificationAdapter)
+    fetchSpy = jest.spyOn(global, 'fetch' as any).mockResolvedValue({
+      ok: true,
+      text: async () => 'ok'
+    });
+
     mockConfig = {
       aws: {
         region: 'us-east-1',
@@ -38,12 +48,14 @@ describe('DependencyFactory', () => {
     factory = new DependencyFactory(mockConfig);
   });
 
+  afterEach(() => {
+    fetchSpy.mockRestore();
+    delete process.env.BASE_PATH_EXTERNAL_API;
+  });
+
   describe('createQueueAdapter', () => {
     it('should create AWSSQSAdapter instance', () => {
-      // Act
       const queueAdapter = factory.createQueueAdapter();
-
-      // Assert
       expect(queueAdapter).toBeDefined();
       expect(queueAdapter.constructor.name).toBe('AWSSQSAdapter');
     });
@@ -51,10 +63,7 @@ describe('DependencyFactory', () => {
 
   describe('createStorageAdapter', () => {
     it('should create AWSS3Adapter instance', () => {
-      // Act
       const storageAdapter = factory.createStorageAdapter();
-
-      // Assert
       expect(storageAdapter).toBeDefined();
       expect(storageAdapter.constructor.name).toBe('AWSS3Adapter');
     });
@@ -62,10 +71,7 @@ describe('DependencyFactory', () => {
 
   describe('createFileSystemAdapter', () => {
     it('should create NodeFileSystemAdapter instance', () => {
-      // Act
       const fileSystemAdapter = factory.createFileSystemAdapter();
-
-      // Assert
       expect(fileSystemAdapter).toBeDefined();
       expect(fileSystemAdapter.constructor.name).toBe('NodeFileSystemAdapter');
     });
@@ -73,10 +79,7 @@ describe('DependencyFactory', () => {
 
   describe('createVideoProcessorAdapter', () => {
     it('should create FFmpegVideoProcessor instance', () => {
-      // Act
       const videoProcessorAdapter = factory.createVideoProcessorAdapter();
-
-      // Assert
       expect(videoProcessorAdapter).toBeDefined();
       expect(videoProcessorAdapter.constructor.name).toBe('FFmpegVideoProcessor');
     });
@@ -84,10 +87,7 @@ describe('DependencyFactory', () => {
 
   describe('createNotificationAdapter', () => {
     it('should create ConsoleNotificationAdapter instance', () => {
-      // Act
       const notificationAdapter = factory.createNotificationAdapter();
-
-      // Assert
       expect(notificationAdapter).toBeDefined();
       expect(notificationAdapter.constructor.name).toBe('ConsoleNotificationAdapter');
     });
@@ -95,10 +95,7 @@ describe('DependencyFactory', () => {
 
   describe('createProcessVideoUseCase', () => {
     it('should create ProcessVideoUseCase instance with all dependencies', () => {
-      // Act
       const processVideoUseCase = factory.createProcessVideoUseCase();
-
-      // Assert
       expect(processVideoUseCase).toBeDefined();
       expect(processVideoUseCase.constructor.name).toBe('ProcessVideoUseCase');
     });
@@ -106,10 +103,7 @@ describe('DependencyFactory', () => {
 
   describe('createCreateQueueUseCase', () => {
     it('should create CreateQueueUseCase instance', () => {
-      // Act
       const createQueueUseCase = factory.createCreateQueueUseCase();
-
-      // Assert
       expect(createQueueUseCase).toBeDefined();
       expect(createQueueUseCase.constructor.name).toBe('CreateQueueUseCase');
     });
@@ -117,10 +111,7 @@ describe('DependencyFactory', () => {
 
   describe('createHealthCheckUseCase', () => {
     it('should create HealthCheckUseCaseImpl instance', () => {
-      // Act
       const healthCheckUseCase = factory.createHealthCheckUseCase();
-
-      // Assert
       expect(healthCheckUseCase).toBeDefined();
       expect(healthCheckUseCase.constructor.name).toBe('HealthCheckUseCaseImpl');
     });
@@ -128,10 +119,7 @@ describe('DependencyFactory', () => {
 
   describe('createHttpServer', () => {
     it('should create ExpressServerAdapter instance', () => {
-      // Act
       const httpServer = factory.createHttpServer();
-
-      // Assert
       expect(httpServer).toBeDefined();
       expect(httpServer.constructor.name).toBe('ExpressServerAdapter');
     });
@@ -139,10 +127,7 @@ describe('DependencyFactory', () => {
 
   describe('AWS Client Configuration', () => {
     it('should create SQS client with correct region', () => {
-      // Act
       factory.createQueueAdapter();
-
-      // Assert
       const { SQSClient } = require('@aws-sdk/client-sqs');
       expect(SQSClient).toHaveBeenCalledWith({
         region: 'us-east-1'
@@ -150,21 +135,17 @@ describe('DependencyFactory', () => {
     });
 
     it('should create S3 client with correct configuration', () => {
-      // Act
       factory.createStorageAdapter();
-
-      // Assert
       const { S3Client } = require('@aws-sdk/client-s3');
       expect(S3Client).toHaveBeenCalledWith({
         region: 'us-east-1',
-        forcePathStyle: false
+        forcePathStyle: false // ⚠️ Depende da lógica interna do seu Factory
       });
     });
   });
 
   describe('Integration', () => {
     it('should create all components without errors', () => {
-      // Act & Assert - should not throw
       expect(() => {
         factory.createQueueAdapter();
         factory.createStorageAdapter();
@@ -179,11 +160,8 @@ describe('DependencyFactory', () => {
     });
 
     it('should create independent instances', () => {
-      // Act
       const adapter1 = factory.createQueueAdapter();
       const adapter2 = factory.createQueueAdapter();
-
-      // Assert
       expect(adapter1).not.toBe(adapter2);
       expect(adapter1).toEqual(adapter2);
     });
