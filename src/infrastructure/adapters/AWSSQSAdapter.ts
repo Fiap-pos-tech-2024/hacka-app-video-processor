@@ -3,7 +3,7 @@ import { QueuePort } from '../../domain/ports/QueuePort.js';
 import { VideoProcessingMessage } from '../../domain/entities/QueueMessage.js';
 
 export class AWSSQSAdapter implements QueuePort {
-  constructor(private readonly sqsClient: SQSClient) {}
+  constructor(private readonly sqsClient: SQSClient) { }
 
   async createQueue(queueName: string): Promise<string | undefined> {
     const params = {
@@ -19,7 +19,7 @@ export class AWSSQSAdapter implements QueuePort {
     } catch (error: any) {
       if (error.Code === 'QueueNameExists' || error.Code === 'QueueAlreadyExists') {
         console.log(`[INFO] Fila já existe: ${queueName}`);
-        
+
         // Usar GetQueueUrl para obter a URL correta
         if (process.env.NODE_ENV === 'production') {
           // Em produção, usar a URL conhecida da fila
@@ -44,18 +44,18 @@ export class AWSSQSAdapter implements QueuePort {
       MaxNumberOfMessages: 10,
       MessageAttributeNames: ["All" as const],
       QueueUrl: queueUrl,
-      VisibilityTimeout: 20,
-      WaitTimeSeconds: 0,
+      VisibilityTimeout: 30,
+      WaitTimeSeconds: 20, // 👈 long polling habilitado!
     };
 
     try {
       const data = await this.sqsClient.send(new ReceiveMessageCommand(params));
-      
+
       if (!data.Messages || data.Messages.length === 0) {
         return [];
       }
 
-      return data.Messages.map(msg => 
+      return data.Messages.map(msg =>
         VideoProcessingMessage.fromQueueMessage({
           id: msg.MessageId,
           body: msg.Body || '',
@@ -67,6 +67,7 @@ export class AWSSQSAdapter implements QueuePort {
       throw error;
     }
   }
+
 
   async deleteMessage(queueUrl: string, receiptHandle: string): Promise<void> {
     const params = {
