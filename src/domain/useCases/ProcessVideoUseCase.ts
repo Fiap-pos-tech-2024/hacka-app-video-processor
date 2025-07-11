@@ -27,9 +27,11 @@ export class ProcessVideoUseCase {
         return;
       }
 
-      for (const message of messages) {
-        await this.processMessage(message, queueUrl);
-      }
+      console.log(`[INFO] Recebidas ${messages.length} mensagens. Iniciando processamento paralelo...`);
+
+      await Promise.all(
+        messages.map(message => this.processMessage(message, queueUrl))
+      );
     } catch (error) {
       console.error('Erro ao processar fila:', error);
       await this.notificationPort.notifyError({ queueUrl }, error);
@@ -51,7 +53,6 @@ export class ProcessVideoUseCase {
         await this.notificationPort.notifyError(videoProcessing.toData(), result.error);
       }
 
-      // Remove mensagem da fila após processamento
       if (message.receiptHandle) {
         await this.queuePort.deleteMessage(queueUrl, message.receiptHandle);
         console.log('Mensagem removida da fila:', message.id);
@@ -59,10 +60,10 @@ export class ProcessVideoUseCase {
     } catch (error) {
       console.error('Erro ao processar mensagem:', error);
       await this.notificationPort.notifyError({ rawBody: message.body }, error);
-      
-      // Remove mensagem mesmo com erro para evitar reprocessamento infinito
+
       if (message.receiptHandle) {
         await this.queuePort.deleteMessage(queueUrl, message.receiptHandle);
+        console.log('Mensagem removida mesmo após erro:', message.id);
       }
     }
   }
@@ -78,13 +79,11 @@ export class ProcessVideoUseCase {
     };
 
     try {
-      // Download do arquivo do S3
       const fileBuffer = await this.storagePort.downloadFile(this.bucketName, videoProcessing.savedVideoKey);
       if (!fileBuffer) {
         throw new Error('Arquivo não encontrado no S3');
       }
 
-      // Preparar diretórios temporários
       const tempDir = path.join(process.cwd(), 'tmp');
       await this.fileSystemPort.mkdir(tempDir);
       
@@ -92,34 +91,30 @@ export class ProcessVideoUseCase {
       await this.fileSystemPort.writeFile(filePath, fileBuffer);
       console.log('Arquivo salvo em:', filePath);
 
-      // Processar frames
       const outputDir = path.join(process.cwd(), 'outputs');
       await this.fileSystemPort.ensureDir(outputDir);
-      
+
       const id = uuidv4();
       const tempFramesDir = path.join(tempDir, id);
       await this.fileSystemPort.ensureDir(tempFramesDir);
 
-      // Extrair frames
       const frames = await this.videoProcessorPort.extractFrames(filePath, tempFramesDir);
       
       if (frames.length === 0) {
         throw new Error('Nenhum frame extraído');
-      }      
-      
-      // Criar ZIP e fazer upload para S3
+      }
+
       const zipName = `frames_${id}.zip`;
       const zipPath = path.join(outputDir, zipName);
       const savedZipKey = await this.videoProcessorPort.createZipFromFrames(tempFramesDir, zipPath, this.bucketName);
 
-      // Limpeza
       await this.fileSystemPort.remove(tempFramesDir);
-      await this.fileSystemPort.remove(filePath);      
-      
+      await this.fileSystemPort.remove(filePath);
+
       result.success = true;
       result.outputPath = zipPath;
       result.savedZipKey = savedZipKey;
-      
+
       return result;
     } catch (error) {
       console.error('Erro ao processar vídeo:', error);
