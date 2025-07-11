@@ -2,12 +2,17 @@ import { NotificationPort } from '../../domain/ports/NotificationPort.js';
 import { ProcessingResult } from '../../domain/entities/VideoProcessing.js';
 
 export class ConsoleNotificationAdapter implements NotificationPort {
-  private readonly baseUrl = process.env.BASE_PATH_EXTERNAL_API;
+  private readonly notificationUrl: string;
+  private readonly statusUpdateUrl: string;
 
-  private readonly notificationUrl = `${this.baseUrl}/api/notify/success`;
-  private readonly statusUpdateUrl = `${this.baseUrl}/api/video`;
-
-  constructor(private readonly bucket: string) {}
+  constructor(
+    private readonly bucket: string,
+    private readonly fetchFn: typeof fetch = globalThis.fetch,
+    baseUrl: string = process.env.EXTERNAL_API_URL || 'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com'
+  ) {
+    this.notificationUrl = `${baseUrl}/api/notify/success`;
+    this.statusUpdateUrl = `${baseUrl}/api/video`;
+  }
 
   private buildS3Url(bucket: string, key: string): string {
     return `https://${bucket}.s3.us-east-1.amazonaws.com/${key}`;
@@ -50,8 +55,6 @@ export class ConsoleNotificationAdapter implements NotificationPort {
       error: error.message || error,
       stack: error.stack
     });
-
-    // TODO: Implementar notificação de erro para sistema externo
   }
 
   private async sendSuccessNotification(result: ProcessingResult, zipUrl?: string): Promise<void> {
@@ -74,7 +77,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     console.log('Enviando notificação para API externa:', this.notificationUrl);
     console.log('Payload:', payload);
 
-    const response = await fetch(this.notificationUrl, {
+    const response = await this.fetchFn(this.notificationUrl, {
       method: 'POST',
       headers: {
         'accept': '*/*',
@@ -118,7 +121,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
     console.log('Atualizando status na API do microserviço:', updateUrl);
     console.log('Payload:', payload);
 
-    const response = await fetch(updateUrl, {
+    const response = await this.fetchFn(updateUrl, {
       method: 'PATCH',
       headers: {
         'accept': 'application/json',
