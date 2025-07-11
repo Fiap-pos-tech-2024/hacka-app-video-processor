@@ -8,7 +8,7 @@ export class ConsoleNotificationAdapter implements NotificationPort {
   constructor(
     private readonly bucket: string,
     private readonly fetchFn: typeof fetch = globalThis.fetch,
-    baseUrl: string = process.env.EXTERNAL_API_URL || 'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com'
+    baseUrl: string = process.env.BASE_PATH_EXTERNAL_API || 'http://ms-shared-alb-1798493639.us-east-1.elb.amazonaws.com'
   ) {
     this.notificationUrl = `${baseUrl}/api/notify/success`;
     this.statusUpdateUrl = `${baseUrl}/api/video`;
